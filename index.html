@@ -1,0 +1,2662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meetha Pitara — Intelligence Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0F1E3C;--navy2:#1C3461;
+  --accent:#FF6B2C;--accent2:#FF8F5C;
+  --green:#10B981;--red:#EF4444;--yellow:#F59E0B;--blue:#3B82F6;--purple:#8B5CF6;--pink:#EC4899;
+  --bg:#0A0F1E;--bg2:#0F1828;--bg3:#141F35;--bg4:#1A2745;
+  --card:#131C30;--card2:#18233A;
+  --border:#1E2D4A;--border2:#263554;
+  --text:#EDF2FF;--text2:#94A3B8;--text3:#4A6080;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:13px}
+.app{display:grid;grid-template-rows:52px 1fr;height:100vh}
+
+/* TOPBAR */
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:16px;position:sticky;top:0;z-index:100}
+.tb-brand{display:flex;align-items:center;gap:8px;margin-right:auto}
+.tb-logo{font-size:20px}
+.tb-name{font-weight:800;font-size:14px;color:var(--text);letter-spacing:-.3px}
+.tb-sub{font-size:9px;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-top:1px}
+.tb-stat{display:flex;flex-direction:column;align-items:center;padding:0 12px;border-left:1px solid var(--border)}
+.tb-stat-lbl{font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+.tb-stat-val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--text)}
+.tb-stat-val.good{color:var(--green)}.tb-stat-val.warn{color:var(--yellow)}.tb-stat-val.crit{color:var(--red)}
+.save-pill{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:9px;font-weight:600;border:1px solid var(--border);color:var(--text2);letter-spacing:.3px;cursor:default}
+.save-pill.idle{color:var(--text3)}.save-pill.loading{color:var(--blue);border-color:var(--blue)30}
+.save-pill.saving{color:var(--yellow);border-color:var(--yellow)30}.save-pill.saved{color:var(--green);border-color:var(--green)30}
+.save-pill.error{color:var(--red);border-color:var(--red)30}.save-pill.nodb{color:var(--text3)}
+.btn-settings{background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:5px 10px;border-radius:7px;cursor:pointer;font-size:11px}
+.btn-settings:hover{border-color:var(--accent);color:var(--accent)}
+
+/* CONTENT */
+.content{display:grid;grid-template-columns:192px 1fr;height:100%;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;padding:10px 0}
+.sb-section{padding:6px 0}
+.sb-section-lbl{font-size:8px;font-weight:700;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;padding:4px 14px 2px}
+.sb-item{display:flex;align-items:center;gap:7px;padding:6px 14px;cursor:pointer;font-size:11px;color:var(--text2);border-left:2px solid transparent;transition:all .15s}
+.sb-item:hover{color:var(--text);background:var(--bg3)}
+.sb-item.active{color:var(--accent);background:rgba(255,107,44,.07);border-left-color:var(--accent)}
+.sb-badge{margin-left:auto;background:var(--red);color:#fff;font-size:8px;font-weight:700;padding:1px 5px;border-radius:10px}
+
+/* MAIN */
+.main{overflow-y:auto;padding:20px;background:var(--bg)}
+.pane{display:none}.pane.active{display:block}
+
+/* KPI CARDS */
+.kpi-row{display:grid;gap:10px;margin-bottom:12px}
+.kpi-row.c5{grid-template-columns:repeat(5,1fr)}.kpi-row.c4{grid-template-columns:repeat(4,1fr)}
+.kpi-row.c3{grid-template-columns:repeat(3,1fr)}.kpi-row.c2{grid-template-columns:repeat(2,1fr)}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px 15px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.kpi.good::before{background:var(--green)}.kpi.warn::before{background:var(--yellow)}
+.kpi.crit::before{background:var(--red)}.kpi.info::before{background:var(--blue)}
+.kpi.purple-k::before{background:var(--purple)}
+.kpi-lbl{font-size:8px;font-weight:700;color:var(--text3);letter-spacing:.6px;text-transform:uppercase;margin-bottom:4px}
+.kpi-val{font-family:'JetBrains Mono',monospace;font-size:21px;font-weight:800;color:var(--text);line-height:1}
+.kpi-sub{font-size:9px;color:var(--text3);margin-top:4px}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:15px;margin-bottom:12px}
+.c-hdr{font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.c-hdr-title{display:flex;align-items:center;gap:6px}
+
+/* GRID LAYOUTS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+.g21{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px}
+.g12{display:grid;grid-template-columns:1fr 2fr;gap:12px;margin-bottom:12px}
+.g-auto{display:grid;gap:12px;margin-bottom:12px}
+
+/* BUTTONS */
+button{cursor:pointer;font-family:'Inter',sans-serif;border:none;outline:none;transition:all .15s}
+.btn-primary{background:var(--accent);color:#fff;padding:8px 14px;border-radius:8px;font-size:11px;font-weight:600}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:8px 14px;border-radius:8px;font-size:11px}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#fca5a5;padding:8px 14px;border-radius:8px;font-size:11px}
+.btn-danger:hover{background:rgba(239,68,68,.2)}
+.btn-sm{padding:5px 10px;font-size:10px}.btn-xs{padding:3px 8px;font-size:9px}
+.btn-icon{background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:5px 8px;border-radius:7px;font-size:11px}
+.btn-icon:hover{border-color:var(--accent);color:var(--accent)}
+
+/* CHIPS */
+.chip{display:inline-flex;align-items:center;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:600;letter-spacing:.2px}
+.chip.g{background:rgba(16,185,129,.15);color:#6ee7b7}.chip.r{background:rgba(239,68,68,.15);color:#fca5a5}
+.chip.y{background:rgba(245,158,11,.15);color:#fcd34d}.chip.b{background:rgba(59,130,246,.15);color:#93c5fd}
+.chip.p{background:rgba(139,92,246,.15);color:#c4b5fd}.chip.o{background:rgba(255,107,44,.15);color:#ff8f5c}
+.chip.grey{background:rgba(100,116,139,.15);color:#94a3b8}
+
+/* FORMS */
+.inp,.sel,.ta{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:11px;color:var(--text);font-family:'Inter',sans-serif;width:100%}
+.sel{cursor:pointer}
+.inp:focus,.sel:focus,.ta:focus{outline:none;border-color:var(--accent)}
+.ta{resize:vertical;min-height:80px}
+.f-lbl{font-size:8px;font-weight:700;color:var(--text3);letter-spacing:.6px;text-transform:uppercase;margin-bottom:4px;display:block}
+.f-row{margin-bottom:10px}
+.f-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.f-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px}
+select option{background:var(--bg3)}
+
+/* ALERTS */
+.alert-item{padding:10px 12px;border-radius:8px;border-left:3px solid;margin-bottom:6px;background:var(--card2)}
+.alert-item.a-crit{border-color:var(--red);background:rgba(239,68,68,.07)}
+.alert-item.a-warn{border-color:var(--yellow);background:rgba(245,158,11,.07)}
+.alert-item.a-info{border-color:var(--blue);background:rgba(59,130,246,.07)}
+.alert-lbl{font-size:8px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.alert-lbl.a-crit{color:var(--red)}.alert-lbl.a-warn{color:var(--yellow)}.alert-lbl.a-info{color:var(--blue)}
+.alert-msg{font-size:11px;color:var(--text);margin:2px 0}
+.alert-meta{font-size:9px;color:var(--text3)}
+
+/* STATUS CHIPS */
+.sc-idea{background:rgba(100,116,139,.15);color:#94a3b8}
+.sc-draft{background:rgba(245,158,11,.15);color:#fcd34d}
+.sc-scheduled{background:rgba(59,130,246,.15);color:#93c5fd}
+.sc-published{background:rgba(16,185,129,.15);color:#6ee7b7}
+
+/* POST CHIPS for calendar */
+.pc-ig-reel{background:rgba(225,48,108,.25);color:#f9a8d4;font-size:9px;padding:1px 5px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.pc-ig-carousel{background:rgba(139,92,246,.25);color:#c4b5fd;font-size:9px;padding:1px 5px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.pc-ig-story{background:rgba(245,158,11,.25);color:#fcd34d;font-size:9px;padding:1px 5px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.pc-li-brand{background:rgba(10,102,194,.25);color:#93c5fd;font-size:9px;padding:1px 5px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.pc-li-founder{background:rgba(16,185,129,.25);color:#6ee7b7;font-size:9px;padding:1px 5px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+
+/* PLATFORM TOGGLE */
+.pt-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:6px 12px;border-radius:8px;font-size:10px;font-weight:600}
+.pt-btn.active.pt-ig{background:rgba(225,48,108,.15);border-color:rgba(225,48,108,.4);color:#f9a8d4}
+.pt-btn.active.pt-li{background:rgba(59,130,246,.15);border-color:rgba(59,130,246,.4);color:#93c5fd}
+.pt-btn.active.pt-lf{background:rgba(16,185,129,.15);border-color:rgba(16,185,129,.4);color:#6ee7b7}
+
+/* FORMAT BUTTONS */
+.fmt-btn{background:var(--bg3);border:1px solid var(--border);padding:10px;text-align:center;border-radius:8px;cursor:pointer;font-size:10px;color:var(--text2);font-family:'Inter',sans-serif}
+.fmt-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.fmt-btn:hover:not(.active){border-color:var(--border2);color:var(--text)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;min-width:400px;max-width:90vw;max-height:90vh;overflow-y:auto;position:relative}
+.modal-title{font-size:14px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.modal-close{background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;line-height:1}
+.modal-close:hover{color:var(--text)}
+.modal-wide{min-width:580px}
+
+/* SECTION HEADER */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-title{font-size:15px;font-weight:700;color:var(--text)}
+.section-sub{font-size:10px;color:var(--text3);margin-top:2px}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:11px}
+.tbl th{font-size:8px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:6px 8px;border-bottom:1px solid var(--border);text-align:left}
+.tbl td{padding:8px;border-bottom:1px solid var(--border)10;color:var(--text2)}
+.tbl tr:hover td{background:var(--bg3)}
+.tbl .mono{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--text)}
+
+/* FILTER TABS */
+.filter-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
+.f-tab{background:var(--bg3);border:1px solid var(--border);color:var(--text3);padding:4px 10px;border-radius:20px;font-size:9px;font-weight:600;cursor:pointer;letter-spacing:.3px;text-transform:uppercase}
+.f-tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.f-tab:hover:not(.active){color:var(--text);border-color:var(--border2)}
+
+/* CANVAS CONTAINERS */
+.chart-box{position:relative;height:180px;width:100%}
+.chart-box-tall{position:relative;height:240px;width:100%}
+.chart-box-sm{position:relative;height:140px;width:100%}
+
+/* FUNNEL */
+.funnel-step{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.funnel-bar-wrap{flex:1;height:24px;background:var(--bg3);border-radius:6px;overflow:hidden}
+.funnel-bar{height:100%;border-radius:6px;display:flex;align-items:center;padding:0 8px;font-size:9px;font-weight:600;color:#fff;transition:width .5s}
+.funnel-label{font-size:10px;color:var(--text2);width:120px;text-align:right}
+.funnel-val{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--text);width:60px;text-align:right}
+
+/* HEATMAP */
+.heatmap-grid{display:grid;grid-template-columns:50px repeat(52,1fr);gap:2px;font-size:8px}
+.heatmap-cell{width:12px;height:12px;border-radius:2px;background:var(--bg3)}
+.hm-0{background:var(--bg3)}.hm-1{background:rgba(255,107,44,.2)}.hm-2{background:rgba(255,107,44,.4)}
+.hm-3{background:rgba(255,107,44,.6)}.hm-4{background:var(--accent)}.hm-5{background:#ff4500}
+
+/* CALENDAR */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-day-name{text-align:center;font-size:8px;font-weight:700;color:var(--text3);padding:4px;text-transform:uppercase}
+.cal-day{min-height:80px;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:5px;cursor:pointer;transition:border-color .15s}
+.cal-day:hover{border-color:var(--accent)}
+.cal-day.other-month{opacity:.4}
+.cal-day.today{border-color:var(--accent);background:rgba(255,107,44,.05)}
+.cal-day-num{font-size:10px;font-weight:700;color:var(--text3);margin-bottom:3px}
+.cal-day.today .cal-day-num{color:var(--accent)}
+.cal-posts{display:flex;flex-direction:column;gap:2px}
+
+/* BRAIN SECTIONS */
+.brain-section{margin-bottom:16px;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.brain-sec-hdr{padding:10px 14px;background:var(--card2);cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:600;color:var(--text)}
+.brain-sec-hdr:hover{background:var(--bg4)}
+.brain-sec-body{padding:14px;background:var(--card);display:none}
+.brain-sec-body.open{display:block}
+.brain-field-row{margin-bottom:10px}
+
+/* COLLAB CARDS */
+.collab-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:15px;margin-bottom:12px}
+.collab-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.collab-name{font-size:13px;font-weight:700;color:var(--text)}
+.collab-handle{font-size:10px;color:var(--text3)}
+.collab-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.collab-metric{background:var(--bg3);border-radius:8px;padding:8px;text-align:center}
+.collab-metric-val{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--text)}
+.collab-metric-lbl{font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+.impact-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px}
+.impact-cell{background:var(--bg3);border-radius:6px;padding:6px 8px}
+.impact-val{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700}
+.impact-val.up{color:var(--green)}.impact-val.down{color:var(--red)}.impact-val.neutral{color:var(--text3)}
+.impact-lbl{font-size:8px;color:var(--text3);text-transform:uppercase}
+
+/* VERDICT BADGES */
+.verdict-excellent{background:rgba(16,185,129,.15);color:#6ee7b7;padding:3px 8px;border-radius:6px;font-size:9px;font-weight:700}
+.verdict-good{background:rgba(59,130,246,.15);color:#93c5fd;padding:3px 8px;border-radius:6px;font-size:9px;font-weight:700}
+.verdict-breakeven{background:rgba(245,158,11,.15);color:#fcd34d;padding:3px 8px;border-radius:6px;font-size:9px;font-weight:700}
+.verdict-loss{background:rgba(239,68,68,.15);color:#fca5a5;padding:3px 8px;border-radius:6px;font-size:9px;font-weight:700}
+.verdict-pending{background:rgba(100,116,139,.15);color:#94a3b8;padding:3px 8px;border-radius:6px;font-size:9px;font-weight:700}
+
+/* AI OUTPUT */
+.ai-output{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:12px;line-height:1.7;color:var(--text2);white-space:pre-wrap;min-height:80px}
+.ai-output.loading{display:flex;align-items:center;justify-content:center;color:var(--text3);font-style:italic}
+.hashtag-box{background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:8px;padding:10px;font-size:10px;color:#c4b5fd;margin-top:8px;word-break:break-word}
+
+/* UPLOAD ZONE */
+.upload-zone{border:2px dashed var(--border);border-radius:12px;padding:40px;text-align:center;cursor:pointer;transition:all .2s}
+.upload-zone.drag-over{border-color:var(--accent);background:rgba(255,107,44,.05)}
+.upload-zone:hover{border-color:var(--border2)}
+.upload-icon{font-size:32px;margin-bottom:10px}
+.upload-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
+.upload-sub{font-size:11px;color:var(--text3)}
+
+/* HEALTH SCORE */
+.health-ring{position:relative;width:120px;height:120px;margin:0 auto 10px}
+.health-ring svg{width:120px;height:120px;transform:rotate(-90deg)}
+.health-ring-val{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.health-ring-num{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:800;color:var(--text)}
+.health-ring-lbl{font-size:8px;color:var(--text3);text-transform:uppercase}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--text3)}
+
+/* DIVIDER */
+.divider{border:none;border-top:1px solid var(--border);margin:12px 0}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:40px;color:var(--text3)}
+.empty-state .es-icon{font-size:28px;margin-bottom:8px}
+.empty-state .es-title{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:4px}
+.empty-state .es-sub{font-size:11px;color:var(--text3)}
+
+/* PROGRESS BAR */
+.progress-wrap{background:var(--bg3);border-radius:4px;height:6px;overflow:hidden;margin-top:4px}
+.progress-bar{height:100%;border-radius:4px;transition:width .3s}
+
+/* STORE COMPARISON */
+.store-row{display:grid;grid-template-columns:140px 1fr 1fr 1fr 1fr 1fr;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)10;align-items:center;font-size:11px}
+.store-name{font-weight:600;color:var(--text);font-size:11px}
+
+/* QUICK ACTION BTNS */
+.quick-btns{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.q-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:6px 10px;border-radius:7px;font-size:10px;cursor:pointer;transition:all .15s;text-align:left}
+.q-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* SAVED FILES LIST */
+.saved-file{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg3);border-radius:7px;margin-bottom:4px}
+.saved-file-name{font-size:10px;color:var(--text);font-weight:500}
+.saved-file-meta{font-size:9px;color:var(--text3)}
+
+/* CORRELATION BAR */
+.corr-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.corr-week{font-size:9px;color:var(--text3);width:60px;text-align:right}
+.corr-bar-wrap{flex:1;height:18px;background:var(--bg3);border-radius:4px;overflow:hidden;position:relative}
+.corr-bar{height:100%;border-radius:4px;transition:width .4s}
+.corr-bar.has-post{background:var(--accent)}
+.corr-bar.no-post{background:var(--navy2)}
+.corr-val{font-size:9px;color:var(--text2);width:60px;font-family:'JetBrains Mono',monospace}
+.corr-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.corr-dot.yes{background:var(--accent)}.corr-dot.no{background:var(--border2)}
+
+/* METRIC PILL */
+.metric-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:6px;font-size:9px;background:var(--bg3);color:var(--text2);margin:1px}
+.metric-pill span{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--text)}
+
+/* POST TRACKER CARD */
+.post-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px}
+.post-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.post-dot.ig{background:var(--pink)}.post-dot.li{background:var(--blue)}.post-dot.lf{background:var(--green)}
+.post-card-body{flex:1;min-width:0}
+.post-card-title{font-size:11px;font-weight:600;color:var(--text);margin-bottom:4px}
+.post-card-meta{font-size:9px;color:var(--text3);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.post-card-metrics{margin-top:6px;display:flex;flex-wrap:wrap;gap:3px}
+
+/* FLAG CARDS */
+.flag-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;transition:opacity .2s}
+.flag-card.resolved{opacity:.5;border-style:dashed}
+.flag-card-hdr{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.flag-card-week{font-size:9px;color:var(--text3)}
+.flag-note-row{display:flex;gap:6px;margin-top:8px}
+.flag-note-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:10px;color:var(--text);font-family:'Inter',sans-serif}
+.flag-note-input:focus{outline:none;border-color:var(--accent)}
+
+/* REPORT SECTION */
+.report-section-check{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)10;font-size:11px;color:var(--text2)}
+.report-section-check input{accent-color:var(--accent);width:14px;height:14px}
+
+/* CONNECTION BANNER */
+.conn-banner{background:rgba(255,107,44,.08);border:1px solid rgba(255,107,44,.2);border-radius:10px;padding:14px;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.conn-banner-text{font-size:11px;color:var(--accent2)}
+
+/* TOP 3 LIST */
+.top-post-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)10}
+.top-post-rank{font-size:16px;width:24px;text-align:center}
+.top-post-info{flex:1}
+.top-post-title{font-size:11px;font-weight:600;color:var(--text)}
+.top-post-meta{font-size:9px;color:var(--text3);margin-top:1px}
+.top-post-eng{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--green)}
+
+/* LOADER */
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* WEEKLY SELECTOR */
+.week-controls{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.week-controls select{flex:1}
+
+/* TRENDS CHART ROWS */
+.trend-section{margin-bottom:20px}
+.trend-section-title{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+
+/* MONTH LABEL */
+.month-label{font-size:8px;color:var(--text3);text-align:center;padding-top:2px}
+
+/* INFO ROW in weekly */
+.info-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)08;font-size:11px}
+.info-row-lbl{color:var(--text3)}
+.info-row-val{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--text)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="tb-brand">
+    <span class="tb-logo">🍬</span>
+    <div>
+      <div class="tb-name">Meetha Pitara</div>
+      <div class="tb-sub">Intelligence Dashboard</div>
+    </div>
+  </div>
+  <div class="save-pill idle" id="save-pill"><span id="save-icon">○</span><span id="save-text">Not connected</span></div>
+  <div class="tb-stat">
+    <div class="tb-stat-lbl">Weeks</div>
+    <div class="tb-stat-val" id="tb-weeks">0</div>
+  </div>
+  <div class="tb-stat">
+    <div class="tb-stat-lbl">Total Sales</div>
+    <div class="tb-stat-val" id="tb-sales">₹0</div>
+  </div>
+  <div class="tb-stat">
+    <div class="tb-stat-lbl">Health</div>
+    <div class="tb-stat-val" id="tb-health">—</div>
+  </div>
+  <button class="btn-settings" onclick="openSettings()">⚙ Settings</button>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sb-section">
+    <div class="sb-section-lbl">Zomato</div>
+    <div class="sb-item active" onclick="nav('upload')">📂 Upload Data</div>
+    <div class="sb-item" onclick="nav('overview')">📊 Dashboard</div>
+    <div class="sb-item" onclick="nav('health')">💯 Health Score</div>
+    <div class="sb-item" onclick="nav('weekly')">📅 Weekly View</div>
+    <div class="sb-item" onclick="nav('monthly')">🗓 Monthly View</div>
+    <div class="sb-item" onclick="nav('trends')">📈 Trends</div>
+    <div class="sb-item" onclick="nav('funnel')">🔽 Funnel</div>
+  </div>
+  <div class="sb-section">
+    <div class="sb-section-lbl">Intelligence</div>
+    <div class="sb-item" onclick="nav('alerts')">🚨 All Alerts <span class="sb-badge" id="alert-badge" style="display:none">0</span></div>
+    <div class="sb-item" onclick="nav('heatmap')">🌡 Heatmap</div>
+    <div class="sb-item" onclick="nav('ai')">🤖 AI Analyst</div>
+  </div>
+  <div class="sb-section">
+    <div class="sb-section-lbl">Marketing</div>
+    <div class="sb-item" onclick="nav('mkt-overview')">📣 Overview</div>
+    <div class="sb-item" onclick="nav('mkt-calendar')">🗓 Content Calendar</div>
+    <div class="sb-item" onclick="nav('mkt-create')">✨ AI Content</div>
+    <div class="sb-item" onclick="nav('mkt-tracker')">📊 Post Tracker</div>
+    <div class="sb-item" onclick="nav('influencer')">📸 Influencer ROI</div>
+  </div>
+  <div class="sb-section">
+    <div class="sb-section-lbl">Brand</div>
+    <div class="sb-item" onclick="nav('brain')">🧠 Brand Brain</div>
+  </div>
+  <div class="sb-section">
+    <div class="sb-section-lbl">Export</div>
+    <div class="sb-item" onclick="nav('reports')">📤 Reports</div>
+    <div class="sb-item" onclick="nav('flags')">✅ Flag Manager</div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main" id="main-content">
+
+<!-- ====== UPLOAD PANE ====== -->
+<div class="pane active" id="pane-upload">
+  <div class="section-header">
+    <div><div class="section-title">📂 Upload Zomato Data</div><div class="section-sub">Drag and drop weekly CSV exports to sync with database</div></div>
+  </div>
+  <div id="conn-warn" class="conn-banner" style="display:none">
+    <span style="font-size:18px">⚠️</span>
+    <div class="conn-banner-text">Database not connected. Click ⚙ Settings (top right) to add your Supabase URL + API key, then reload the page.</div>
+  </div>
+  <div class="upload-zone" id="upload-zone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" onclick="document.getElementById('file-inp').click()">
+    <div class="upload-icon">📁</div>
+    <div class="upload-title" id="upload-title">Drop Zomato CSV files here</div>
+    <div class="upload-sub" id="upload-sub">Or click to browse — accepts multiple files at once</div>
+    <input type="file" id="file-inp" accept=".csv" multiple style="display:none" onchange="handleFiles(this.files)">
+  </div>
+  <div id="upload-progress" style="margin-top:10px"></div>
+  <div class="card" style="margin-top:14px">
+    <div class="c-hdr"><div class="c-hdr-title">Loaded Weeks</div><span id="loaded-count" style="font-family:'JetBrains Mono',monospace;color:var(--text)">0 weeks</span></div>
+    <div id="saved-list"></div>
+  </div>
+</div>
+
+<!-- ====== DASHBOARD/OVERVIEW PANE ====== -->
+<div class="pane" id="pane-overview">
+  <div class="section-header">
+    <div><div class="section-title">📊 Dashboard Overview</div><div class="section-sub" id="ov-sub">Latest week performance across all outlets</div></div>
+    <select class="sel" style="width:180px" id="ov-week-sel" onchange="renderOverview()"></select>
+  </div>
+  <div class="kpi-row c5" id="ov-kpis"></div>
+  <div class="g21">
+    <div class="card"><div class="c-hdr"><div>Orders + Sales (8 weeks)</div></div><div class="chart-box"><canvas id="ch-orders-sales"></canvas></div></div>
+    <div class="card"><div class="c-hdr"><div>Meal Period Mix</div></div><div class="chart-box"><canvas id="ch-meal-mix"></canvas></div></div>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="c-hdr"><div>User Segments</div></div><div class="chart-box"><canvas id="ch-users"></canvas></div></div>
+    <div class="card"><div class="c-hdr"><div>Ads Performance</div></div><div class="chart-box"><canvas id="ch-ads"></canvas></div></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="c-hdr"><div>Store Comparison</div></div>
+      <div id="store-table"></div>
+    </div>
+    <div class="card">
+      <div class="c-hdr"><div>Open Flags (this week)</div></div>
+      <div id="ov-flags"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== HEALTH SCORE PANE ====== -->
+<div class="pane" id="pane-health">
+  <div class="section-header">
+    <div><div class="section-title">💯 Health Score</div><div class="section-sub">Composite performance indicator (0–100)</div></div>
+  </div>
+  <div class="g12">
+    <div class="card" style="text-align:center;padding:30px 15px">
+      <div class="health-ring" id="health-ring">
+        <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" fill="none" stroke="rgba(30,45,74,.8)" stroke-width="10"/><circle id="hr-circle" cx="60" cy="60" r="50" fill="none" stroke="var(--green)" stroke-width="10" stroke-dasharray="314" stroke-dashoffset="314" stroke-linecap="round"/></svg>
+        <div class="health-ring-val"><div class="health-ring-num" id="hr-num">—</div><div class="health-ring-lbl">Score</div></div>
+      </div>
+      <div id="hr-grade" style="font-size:14px;font-weight:700;margin-bottom:4px"></div>
+      <div id="hr-summary" style="font-size:10px;color:var(--text3);max-width:200px;margin:0 auto"></div>
+    </div>
+    <div class="card">
+      <div class="c-hdr"><div>Score Breakdown</div></div>
+      <div id="health-breakdown"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="c-hdr"><div>Health Score History</div></div>
+    <div class="chart-box-tall"><canvas id="ch-health-hist"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="c-hdr"><div>What's Dragging Your Score Down</div></div>
+    <div id="health-drag"></div>
+  </div>
+</div>
+
+<!-- ====== WEEKLY VIEW PANE ====== -->
+<div class="pane" id="pane-weekly">
+  <div class="section-header">
+    <div><div class="section-title">📅 Weekly View</div><div class="section-sub">Deep-dive into any single week</div></div>
+  </div>
+  <div class="week-controls">
+    <select class="sel" id="week-sel" onchange="renderWeekly()"></select>
+  </div>
+  <div class="kpi-row c4" id="wk-kpis"></div>
+  <div class="g3" id="wk-stores"></div>
+  <div class="g2">
+    <div class="card"><div class="c-hdr"><div>Funnel Metrics</div></div><div id="wk-funnel"></div></div>
+    <div class="card"><div class="c-hdr"><div>Ads Summary</div></div><div id="wk-ads"></div></div>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="c-hdr"><div>Time Performance</div></div><div id="wk-time"></div></div>
+    <div class="card"><div class="c-hdr"><div>Customer Mix</div></div><div id="wk-customer"></div></div>
+  </div>
+  <div class="card">
+    <div class="c-hdr"><div>Week Flags</div></div>
+    <div id="wk-flags"></div>
+  </div>
+</div>
+
+<!-- ====== MONTHLY VIEW PANE ====== -->
+<div class="pane" id="pane-monthly">
+  <div class="section-header">
+    <div><div class="section-title">🗓 Monthly View</div><div class="section-sub">Aggregate performance by calendar month</div></div>
+    <select class="sel" style="width:160px" id="month-sel" onchange="renderMonthly()"></select>
+  </div>
+  <div class="kpi-row c4" id="mo-kpis"></div>
+  <div class="g2">
+    <div class="card"><div class="c-hdr"><div>Weekly Orders in Month</div></div><div class="chart-box"><canvas id="ch-mo-orders"></canvas></div></div>
+    <div class="card"><div class="c-hdr"><div>Weekly Sales in Month</div></div><div class="chart-box"><canvas id="ch-mo-sales"></canvas></div></div>
+  </div>
+  <div class="card"><div class="c-hdr"><div>Month-over-Month Comparison</div></div><div id="mo-compare"></div></div>
+</div>
+
+<!-- ====== TRENDS PANE ====== -->
+<div class="pane" id="pane-trends">
+  <div class="section-header">
+    <div><div class="section-title">📈 Trends</div><div class="section-sub">All-time performance across every uploaded week</div></div>
+  </div>
+  <div class="trend-section"><div class="trend-section-title">Orders & Revenue</div>
+    <div class="g2">
+      <div class="card"><div class="c-hdr"><div>Weekly Orders</div></div><div class="chart-box"><canvas id="ch-tr-orders"></canvas></div></div>
+      <div class="card"><div class="c-hdr"><div>Weekly Sales (₹)</div></div><div class="chart-box"><canvas id="ch-tr-sales"></canvas></div></div>
+    </div>
+  </div>
+  <div class="trend-section"><div class="trend-section-title">Visibility & Conversion</div>
+    <div class="g2">
+      <div class="card"><div class="c-hdr"><div>Impressions & Menu Opens</div></div><div class="chart-box"><canvas id="ch-tr-impr"></canvas></div></div>
+      <div class="card"><div class="c-hdr"><div>Overall Conversion Rate (%)</div></div><div class="chart-box"><canvas id="ch-tr-conv"></canvas></div></div>
+    </div>
+  </div>
+  <div class="trend-section"><div class="trend-section-title">Operations & Rating</div>
+    <div class="g2">
+      <div class="card"><div class="c-hdr"><div>Online % & Offline Hours</div></div><div class="chart-box"><canvas id="ch-tr-online"></canvas></div></div>
+      <div class="card"><div class="c-hdr"><div>Avg Rating</div></div><div class="chart-box"><canvas id="ch-tr-rating"></canvas></div></div>
+    </div>
+  </div>
+  <div class="trend-section"><div class="trend-section-title">Ads</div>
+    <div class="g2">
+      <div class="card"><div class="c-hdr"><div>Ads Spend & ROI</div></div><div class="chart-box"><canvas id="ch-tr-ads"></canvas></div></div>
+      <div class="card"><div class="c-hdr"><div>User Type Mix Over Time</div></div><div class="chart-box"><canvas id="ch-tr-users"></canvas></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== FUNNEL PANE ====== -->
+<div class="pane" id="pane-funnel">
+  <div class="section-header">
+    <div><div class="section-title">🔽 Conversion Funnel</div><div class="section-sub">Impressions → Orders breakdown with benchmarks</div></div>
+    <select class="sel" style="width:180px" id="fn-week-sel" onchange="renderFunnel()"></select>
+  </div>
+  <div id="funnel-viz"></div>
+  <div class="g2">
+    <div class="card"><div class="c-hdr"><div>Funnel by Store</div></div><div id="funnel-stores"></div></div>
+    <div class="card"><div class="c-hdr"><div>Funnel Trend (Conversion %)</div></div><div class="chart-box-tall"><canvas id="ch-fn-trend"></canvas></div></div>
+  </div>
+</div>
+
+<!-- ====== ALERTS PANE ====== -->
+<div class="pane" id="pane-alerts">
+  <div class="section-header">
+    <div><div class="section-title">🚨 All Alerts</div><div class="section-sub" id="alerts-sub">All flags across all weeks</div></div>
+  </div>
+  <div class="filter-tabs">
+    <div class="f-tab active" onclick="setAlertFilter('all',this)">All</div>
+    <div class="f-tab" onclick="setAlertFilter('crit',this)">🔴 Critical</div>
+    <div class="f-tab" onclick="setAlertFilter('warn',this)">🟡 Warning</div>
+    <div class="f-tab" onclick="setAlertFilter('info',this)">🔵 Info</div>
+  </div>
+  <div id="alerts-list"></div>
+</div>
+
+<!-- ====== HEATMAP PANE ====== -->
+<div class="pane" id="pane-heatmap">
+  <div class="section-header">
+    <div><div class="section-title">🌡 Performance Heatmap</div><div class="section-sub">Weekly intensity across all metrics</div></div>
+  </div>
+  <div class="card">
+    <div class="c-hdr"><div>Orders Intensity by Week</div></div>
+    <div id="heatmap-orders" style="overflow-x:auto;padding-bottom:6px"></div>
+  </div>
+  <div class="card">
+    <div class="c-hdr"><div>Sales Intensity by Week</div></div>
+    <div id="heatmap-sales" style="overflow-x:auto;padding-bottom:6px"></div>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="c-hdr"><div>Online % Heatmap</div></div><div id="heatmap-online"></div></div>
+    <div class="card"><div class="c-hdr"><div>Conversion Rate Heatmap</div></div><div id="heatmap-conv"></div></div>
+  </div>
+</div>
+
+<!-- ====== AI ANALYST PANE ====== -->
+<div class="pane" id="pane-ai">
+  <div class="section-header">
+    <div><div class="section-title">🤖 AI Analyst</div><div class="section-sub">Powered by Groq · Llama 3.3 70B</div></div>
+  </div>
+  <div id="ai-groq-warn" class="conn-banner" style="display:none">
+    <span>⚠️</span><div class="conn-banner-text">Groq API key not set. Add it in ⚙ Settings to enable AI analysis.</div>
+  </div>
+  <div class="quick-btns" id="quick-btns"></div>
+  <div class="card">
+    <div class="c-hdr"><div>Ask a Question</div><button class="btn-secondary btn-sm" onclick="clearAI()">Clear</button></div>
+    <textarea class="ta" id="ai-question" placeholder="e.g. Why is my conversion rate low? What should I focus on this month?" style="margin-bottom:8px;height:70px"></textarea>
+    <button class="btn-primary" onclick="runAI()" id="ai-run-btn">⚡ Analyse</button>
+  </div>
+  <div class="card">
+    <div class="c-hdr"><div>AI Response</div><span id="ai-thinking" style="display:none" class="spinner"></span></div>
+    <div class="ai-output" id="ai-output" style="min-height:120px">Ask a question above to get AI-powered insights based on your actual data and brand context.</div>
+  </div>
+</div>
+
+<!-- ====== MARKETING OVERVIEW PANE ====== -->
+<div class="pane" id="pane-mkt-overview">
+  <div class="section-header">
+    <div><div class="section-title">📣 Marketing Overview</div><div class="section-sub">Content performance across all platforms</div></div>
+    <button class="btn-primary btn-sm" onclick="openPostModal()">+ New Post</button>
+  </div>
+  <div class="kpi-row c5" id="mkt-kpis"></div>
+  <div class="g2">
+    <div class="card"><div class="c-hdr"><div>Reach Over Time</div></div><div class="chart-box"><canvas id="ch-mkt-reach"></canvas></div></div>
+    <div class="card"><div class="c-hdr"><div>Avg Engagement by Platform</div></div><div class="chart-box"><canvas id="ch-mkt-eng"></canvas></div></div>
+  </div>
+  <div class="g3">
+    <div class="card">
+      <div class="c-hdr"><div>🏆 Top Posts by Engagement</div></div>
+      <div id="top-posts"></div>
+    </div>
+    <div class="card">
+      <div class="c-hdr"><div>Content Mix</div></div>
+      <div class="chart-box-sm"><canvas id="ch-mkt-format"></canvas></div>
+      <div class="chart-box-sm" style="margin-top:8px"><canvas id="ch-mkt-platform"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="c-hdr"><div>Zomato × Content Correlation</div></div>
+      <div id="corr-viz"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== CONTENT CALENDAR PANE ====== -->
+<div class="pane" id="pane-mkt-calendar">
+  <div class="section-header">
+    <div><div class="section-title">🗓 Content Calendar</div></div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="btn-icon" onclick="calPrev()">◀</button>
+      <div id="cal-month-lbl" style="font-size:13px;font-weight:700;min-width:120px;text-align:center"></div>
+      <button class="btn-icon" onclick="calNext()">▶</button>
+      <button class="btn-primary btn-sm" onclick="openPostModal()">+ Post</button>
+    </div>
+  </div>
+  <div class="filter-tabs">
+    <div class="f-tab active" onclick="setCalFilter('all',this)">All</div>
+    <div class="f-tab" onclick="setCalFilter('ig',this)">Instagram</div>
+    <div class="f-tab" onclick="setCalFilter('li',this)">LinkedIn Brand</div>
+    <div class="f-tab" onclick="setCalFilter('lf',this)">LinkedIn Founder</div>
+    <div class="f-tab" onclick="setCalFilter('published',this)">Published</div>
+    <div class="f-tab" onclick="setCalFilter('scheduled',this)">Scheduled</div>
+  </div>
+  <div class="cal-grid" id="cal-grid-header" style="margin-bottom:4px">
+    <div class="cal-day-name">MON</div><div class="cal-day-name">TUE</div><div class="cal-day-name">WED</div>
+    <div class="cal-day-name">THU</div><div class="cal-day-name">FRI</div><div class="cal-day-name">SAT</div><div class="cal-day-name">SUN</div>
+  </div>
+  <div class="cal-grid" id="cal-grid"></div>
+</div>
+
+<!-- ====== AI CONTENT PANE ====== -->
+<div class="pane" id="pane-mkt-create">
+  <div class="section-header">
+    <div><div class="section-title">✨ AI Content Generator</div><div class="section-sub">Meetha Pitara-branded content via Groq</div></div>
+  </div>
+  <div id="ai-content-warn" class="conn-banner" style="display:none">
+    <span>⚠️</span><div class="conn-banner-text">Groq API key not set. Add it in ⚙ Settings to enable AI content generation.</div>
+  </div>
+  <div class="card">
+    <div class="c-hdr"><div>Platform</div></div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button class="pt-btn pt-ig active" id="pt-ig" onclick="setPlatform('ig')">📸 Instagram</button>
+      <button class="pt-btn pt-li" id="pt-li" onclick="setPlatform('li')">💼 LinkedIn Brand</button>
+      <button class="pt-btn pt-lf" id="pt-lf" onclick="setPlatform('lf')">👤 LinkedIn Founder</button>
+    </div>
+    <div class="c-hdr"><div>Format</div></div>
+    <div id="fmt-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px"></div>
+    <div class="f-row">
+      <label class="f-lbl">Topic / Brief (optional)</label>
+      <textarea class="ta" id="content-brief" placeholder="e.g. New summer flavor launch — Aam Panna Sorbet, emphasise the nostalgia angle and Mumbai summer heat..." style="height:70px"></textarea>
+    </div>
+    <button class="btn-primary" onclick="generateContent()" id="gen-btn">✨ Generate Content</button>
+  </div>
+  <div id="gen-output" style="display:none">
+    <div class="card">
+      <div class="c-hdr"><div>Generated Content</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn-secondary btn-sm" onclick="copyContent()">📋 Copy</button>
+          <button class="btn-primary btn-sm" onclick="saveToCalendar()">📅 Save to Calendar</button>
+        </div>
+      </div>
+      <div class="ai-output" id="gen-text" style="min-height:200px"></div>
+      <div id="gen-hashtags" style="display:none">
+        <div class="f-lbl" style="margin-top:10px">Hashtags</div>
+        <div class="hashtag-box" id="hashtag-content"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== POST TRACKER PANE ====== -->
+<div class="pane" id="pane-mkt-tracker">
+  <div class="section-header">
+    <div><div class="section-title">📊 Post Tracker</div><div class="section-sub">All posts — add metrics after publishing</div></div>
+    <button class="btn-primary btn-sm" onclick="openPostModal()">+ New Post</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+    <select class="sel" style="width:160px" id="tracker-platform-filter" onchange="renderTracker()">
+      <option value="all">All Platforms</option>
+      <option value="ig">Instagram</option>
+      <option value="li">LinkedIn Brand</option>
+      <option value="lf">LinkedIn Founder</option>
+    </select>
+    <select class="sel" style="width:140px" id="tracker-status-filter" onchange="renderTracker()">
+      <option value="all">All Status</option>
+      <option value="idea">Idea</option>
+      <option value="draft">Draft</option>
+      <option value="scheduled">Scheduled</option>
+      <option value="published">Published</option>
+    </select>
+  </div>
+  <div id="tracker-list"></div>
+</div>
+
+<!-- ====== INFLUENCER ROI PANE ====== -->
+<div class="pane" id="pane-influencer">
+  <div class="section-header">
+    <div><div class="section-title">📸 Influencer ROI Tracker</div><div class="section-sub">Track collabs + Zomato impact attribution</div></div>
+    <button class="btn-primary btn-sm" onclick="openCollabModal()">+ Add Collab</button>
+  </div>
+  <div class="kpi-row c4" id="inf-kpis"></div>
+  <div id="collab-list"></div>
+</div>
+
+<!-- ====== BRAND BRAIN PANE ====== -->
+<div class="pane" id="pane-brain">
+  <div class="section-header">
+    <div><div class="section-title">🧠 Brand Brain</div><div class="section-sub">Fill this out once — all AI responses will use it automatically. Auto-saves.</div></div>
+    <span id="brain-save-status" style="font-size:9px;color:var(--text3)"></span>
+  </div>
+  <div id="brain-sections"></div>
+</div>
+
+<!-- ====== REPORTS PANE ====== -->
+<div class="pane" id="pane-reports">
+  <div class="section-header">
+    <div><div class="section-title">📤 Reports & Export</div><div class="section-sub">Export data and generate stakeholder reports</div></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="c-hdr"><div>Quick Exports</div></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)10">
+          <div><div style="font-size:11px;color:var(--text)">Weekly Performance Data</div><div style="font-size:9px;color:var(--text3)">All weeks · all metrics</div></div>
+          <button class="btn-secondary btn-sm" onclick="exportCSV('weekly')">⬇ CSV</button>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)10">
+          <div><div style="font-size:11px;color:var(--text)">Monthly Rollup</div><div style="font-size:9px;color:var(--text3)">Aggregated by month</div></div>
+          <button class="btn-secondary btn-sm" onclick="exportCSV('monthly')">⬇ CSV</button>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)10">
+          <div><div style="font-size:11px;color:var(--text)">Influencer ROI Report</div><div style="font-size:9px;color:var(--text3)">All collabs + attributed revenue</div></div>
+          <button class="btn-secondary btn-sm" onclick="exportCSV('influencer')">⬇ CSV</button>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)10">
+          <div><div style="font-size:11px;color:var(--text)">Flag Resolution Log</div><div style="font-size:9px;color:var(--text3)">All flags and resolutions</div></div>
+          <button class="btn-secondary btn-sm" onclick="exportCSV('flags')">⬇ CSV</button>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0">
+          <div><div style="font-size:11px;color:var(--text)">Marketing Post Tracker</div><div style="font-size:9px;color:var(--text3)">All posts + metrics</div></div>
+          <button class="btn-secondary btn-sm" onclick="exportCSV('posts')">⬇ CSV</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="c-hdr"><div>Stakeholder Report Builder</div></div>
+      <div class="f-row"><label class="f-lbl">Report Title</label><input class="inp" id="rep-title" value="Meetha Pitara — Weekly Business Review"></div>
+      <div class="f-grid2">
+        <div><label class="f-lbl">From Week</label><select class="sel" id="rep-from"></select></div>
+        <div><label class="f-lbl">To Week</label><select class="sel" id="rep-to"></select></div>
+      </div>
+      <div class="f-lbl" style="margin-bottom:8px">Include Sections</div>
+      <div id="rep-sections">
+        <label class="report-section-check"><input type="checkbox" checked> KPI Summary</label>
+        <label class="report-section-check"><input type="checkbox" checked> Store Breakdown</label>
+        <label class="report-section-check"><input type="checkbox" checked> Funnel</label>
+        <label class="report-section-check"><input type="checkbox" checked> Open Flags</label>
+        <label class="report-section-check"><input type="checkbox" checked> Influencer ROI</label>
+        <label class="report-section-check"><input type="checkbox" checked> Action Items</label>
+      </div>
+      <div class="f-row" style="margin-top:10px"><label class="f-lbl">Prepared By</label><input class="inp" id="rep-by" placeholder="Dhruvi / Kovid / Team"></div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn-primary" onclick="generateReport()">📄 Generate PDF</button>
+        <button class="btn-secondary" onclick="previewReport()">👁 Preview</button>
+      </div>
+    </div>
+  </div>
+  <div id="report-preview"></div>
+</div>
+
+<!-- ====== FLAG MANAGER PANE ====== -->
+<div class="pane" id="pane-flags">
+  <div class="section-header">
+    <div><div class="section-title">✅ Flag Manager</div><div class="section-sub">Track and resolve all operational issues</div></div>
+    <div id="flag-rate-kpi" class="kpi info" style="min-width:120px;padding:8px 12px"></div>
+  </div>
+  <div class="filter-tabs">
+    <div class="f-tab active" onclick="setFlagFilter('all',this)">All</div>
+    <div class="f-tab" onclick="setFlagFilter('open',this)">Open</div>
+    <div class="f-tab" onclick="setFlagFilter('resolved',this)">Resolved</div>
+  </div>
+  <div id="flag-list"></div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /content -->
+</div><!-- /app -->
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal" style="min-width:460px">
+    <div class="modal-title">⚙ Settings<button class="modal-close" onclick="closeModal('settings-modal')">✕</button></div>
+    <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Supabase Database</div>
+    <div class="f-row"><label class="f-lbl">Project URL</label><input class="inp" id="sb-url" placeholder="https://xxxxx.supabase.co" type="url"></div>
+    <div class="f-row"><label class="f-lbl">Anon Public Key</label><input class="inp" id="sb-key" placeholder="eyJhbGciOi..." type="password"></div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button class="btn-primary" onclick="saveSettings()">💾 Save & Connect</button>
+      <button class="btn-secondary" onclick="testConnection()">🔌 Test Connection</button>
+    </div>
+    <div id="conn-status" style="font-size:10px;color:var(--text3)"></div>
+    <hr class="divider">
+    <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">AI — Groq API</div>
+    <div class="f-row"><label class="f-lbl">Groq API Key</label><input class="inp" id="groq-key" placeholder="gsk_..." type="password"></div>
+    <div style="font-size:9px;color:var(--text3);margin-bottom:10px">Free key at <a href="https://console.groq.com" target="_blank" style="color:var(--accent)">console.groq.com</a> — no credit card required.</div>
+    <button class="btn-primary" onclick="saveSettings()">💾 Save All</button>
+  </div>
+</div>
+
+<!-- POST MODAL -->
+<div class="modal-overlay" id="post-modal">
+  <div class="modal modal-wide">
+    <div class="modal-title"><span id="pm-title">New Post</span><button class="modal-close" onclick="closeModal('post-modal')">✕</button></div>
+    <div class="f-grid2">
+      <div><label class="f-lbl">Platform</label>
+        <select class="sel" id="pm-platform" onchange="updatePmFields()">
+          <option value="ig">Instagram</option>
+          <option value="li">LinkedIn Brand</option>
+          <option value="lf">LinkedIn Founder</option>
+        </select>
+      </div>
+      <div><label class="f-lbl">Format</label><select class="sel" id="pm-format"></select></div>
+    </div>
+    <div class="f-grid2">
+      <div><label class="f-lbl">Status</label>
+        <select class="sel" id="pm-status">
+          <option value="idea">Idea</option><option value="draft">Draft</option>
+          <option value="scheduled">Scheduled</option><option value="published">Published</option>
+        </select>
+      </div>
+      <div><label class="f-lbl">Date</label><input class="inp" id="pm-date" type="date"></div>
+    </div>
+    <div class="f-row"><label class="f-lbl">Title / Topic</label><input class="inp" id="pm-title-inp" placeholder="Brief description of the post..."></div>
+    <div class="f-row"><label class="f-lbl">Caption</label><textarea class="ta" id="pm-caption" placeholder="Post caption..." style="height:90px"></textarea></div>
+    <div id="pm-metrics-ig" style="display:none">
+      <div style="font-size:10px;font-weight:700;color:var(--text3);margin-bottom:8px;text-transform:uppercase">Instagram Metrics</div>
+      <div class="f-grid3">
+        <div><label class="f-lbl">Views/Reach</label><input class="inp" id="pm-ig-reach" type="number" placeholder="0"></div>
+        <div><label class="f-lbl">Likes</label><input class="inp" id="pm-ig-likes" type="number" placeholder="0"></div>
+        <div><label class="f-lbl">Comments</label><input class="inp" id="pm-ig-comments" type="number" placeholder="0"></div>
+        <div><label class="f-lbl">Saves</label><input class="inp" id="pm-ig-saves" type="number" placeholder="0"></div>
+        <div><label class="f-lbl">Shares</label><input class="inp" id="pm-ig-shares" type="number" placeholder="0"></div>
+        <div><label class="f-lbl">Profile Visits</label><input class="inp" id="pm-ig-visits" type="number" placeholder="0"></div>
+      </div>
+    </div>
+    <div id="pm-metrics-li" style="display:none">
+      <div style="font-size:10px;font-weight:700;color:var(--text3);margin-bottom:8px;text-transform:uppercase">LinkedIn Metrics</div>
+      <div class="f-grid3">
+        <div><label class="f-lbl">Impressions</label><input class="inp" id="pm-li-impressions" type="number" placeholder="0"></div>
+        <div><label class="f-lbl">Reactions</label><input class="inp" id="pm-li-reactions" type="number" placeholder="0"></div>
+        <div><label class="f-lbl">Comments</label><input class="inp" id="pm-li-comments" type="number" placeholder="0"></div>
+        <div><label class="f-lbl">Reposts</label><input class="inp" id="pm-li-reposts" type="number" placeholder="0"></div>
+        <div><label class="f-lbl">Link Clicks</label><input class="inp" id="pm-li-clicks" type="number" placeholder="0"></div>
+      </div>
+    </div>
+    <div class="f-row"><label class="f-lbl">Notes</label><input class="inp" id="pm-notes" placeholder="Internal notes..."></div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn-primary" onclick="savePost()">💾 Save Post</button>
+      <button class="btn-danger" id="pm-delete-btn" style="display:none" onclick="deletePost()">🗑 Delete</button>
+      <button class="btn-secondary" onclick="closeModal('post-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- COLLAB MODAL -->
+<div class="modal-overlay" id="collab-modal">
+  <div class="modal modal-wide">
+    <div class="modal-title">Add Influencer Collab<button class="modal-close" onclick="closeModal('collab-modal')">✕</button></div>
+    <div class="f-grid2">
+      <div><label class="f-lbl">Name</label><input class="inp" id="cm-name" placeholder="Creator name"></div>
+      <div><label class="f-lbl">Handle</label><input class="inp" id="cm-handle" placeholder="@username"></div>
+    </div>
+    <div class="f-grid3">
+      <div><label class="f-lbl">Followers</label><input class="inp" id="cm-followers" type="number" placeholder="8500"></div>
+      <div><label class="f-lbl">Type</label>
+        <select class="sel" id="cm-type"><option value="Paid">Paid</option><option value="Barter">Barter</option><option value="Gifted">Gifted</option></select>
+      </div>
+      <div><label class="f-lbl">Cost/Value (₹)</label><input class="inp" id="cm-cost" type="number" placeholder="0"></div>
+    </div>
+    <div class="f-grid2">
+      <div><label class="f-lbl">Go-Live Date</label><input class="inp" id="cm-date" type="date"></div>
+      <div><label class="f-lbl">Content Type</label>
+        <select class="sel" id="cm-content-type"><option value="Reel+Story">Reel + Story</option><option value="Reel">Reel only</option><option value="Story">Story only</option></select>
+      </div>
+    </div>
+    <div style="font-size:10px;font-weight:700;color:var(--text3);margin-bottom:8px;text-transform:uppercase;margin-top:4px">Instagram Performance</div>
+    <div class="f-grid3">
+      <div><label class="f-lbl">Reel Views</label><input class="inp" id="cm-views" type="number" placeholder="0"></div>
+      <div><label class="f-lbl">Likes</label><input class="inp" id="cm-likes" type="number" placeholder="0"></div>
+      <div><label class="f-lbl">Comments</label><input class="inp" id="cm-comments" type="number" placeholder="0"></div>
+      <div><label class="f-lbl">Story Views</label><input class="inp" id="cm-story-views" type="number" placeholder="0"></div>
+      <div><label class="f-lbl">Link Clicks</label><input class="inp" id="cm-clicks" type="number" placeholder="0"></div>
+    </div>
+    <div class="f-row" style="margin-top:4px"><label class="f-lbl">Notes</label><textarea class="ta" id="cm-notes" placeholder="Brief on what was posted, any observations..." style="height:60px"></textarea></div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn-primary" onclick="saveCollab()">💾 Save Collab</button>
+      <button class="btn-secondary" onclick="closeModal('collab-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================
+// GLOBAL STATE
+// ============================
+let weeks=[], collabs=[], posts=[], flagStates={}, allAlerts=[], brandBrain={}, charts={};
+let SUPABASE_URL='', SUPABASE_KEY='', GROQ_KEY='';
+let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
+let calFilterVal='all', alertFilter='all', flagFilter='all';
+let currentPlatform='ig', currentFormat='reel';
+let editingPostId=null;
+let generatedContent='', generatedHashtags='';
+let brainDebounceTimers={};
+
+// ============================
+// SETTINGS & BOOT
+// ============================
+function openSettings(){
+  document.getElementById('sb-url').value=SUPABASE_URL;
+  document.getElementById('sb-key').value=SUPABASE_KEY;
+  document.getElementById('groq-key').value=GROQ_KEY;
+  openModal('settings-modal');
+}
+
+function saveSettings(){
+  SUPABASE_URL=document.getElementById('sb-url').value.trim().replace(/\/$/,'');
+  SUPABASE_KEY=document.getElementById('sb-key').value.trim();
+  GROQ_KEY=document.getElementById('groq-key').value.trim();
+  localStorage.setItem('mp_supabase_url',SUPABASE_URL);
+  localStorage.setItem('mp_supabase_key',SUPABASE_KEY);
+  localStorage.setItem('mp_groq_key',GROQ_KEY);
+  closeModal('settings-modal');
+  location.reload();
+}
+
+async function testConnection(){
+  const s=document.getElementById('conn-status');
+  s.textContent='Testing...';s.style.color='var(--yellow)';
+  try{
+    const url=document.getElementById('sb-url').value.trim().replace(/\/$/,'');
+    const key=document.getElementById('sb-key').value.trim();
+    const r=await fetch(`${url}/rest/v1/weeks?select=id&limit=1`,{headers:{'apikey':key,'Authorization':'Bearer '+key}});
+    if(r.ok){s.textContent='✓ Connection successful!';s.style.color='var(--green)';}
+    else{s.textContent=`✗ Error: ${r.status} — check URL and key`;s.style.color='var(--red)';}
+  }catch(e){s.textContent='✗ Network error: '+e.message;s.style.color='var(--red)';}
+}
+
+// ============================
+// SUPABASE FUNCTIONS
+// ============================
+function sbHeaders(){
+  return{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'};
+}
+
+async function sbSelect(table,query){
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/${table}${query||'?select=*'}`,{headers:sbHeaders()});
+  if(!r.ok)throw new Error(`${table} select failed: ${r.status}`);
+  return r.json();
+}
+
+async function sbUpsert(table,rows,onConflict){
+  if(!rows.length)return;
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/${table}?on_conflict=${onConflict}`,{
+    method:'POST',
+    headers:{...sbHeaders(),'Prefer':'resolution=merge-duplicates,return=minimal'},
+    body:JSON.stringify(rows)
+  });
+  if(!r.ok)throw new Error(`${table} upsert failed: ${r.status}`);
+}
+
+async function sbDelete(table,col,val){
+  await fetch(`${SUPABASE_URL}/rest/v1/${table}?${col}=eq.${val}`,{
+    method:'DELETE',headers:{...sbHeaders(),'Prefer':'return=minimal'}
+  });
+}
+
+// ============================
+// SAVE PILL
+// ============================
+function setSavePill(state){
+  const el=document.getElementById('save-pill');
+  const icon=document.getElementById('save-icon');
+  const text=document.getElementById('save-text');
+  el.className='save-pill '+state;
+  const states={idle:['○','Not connected'],loading:['⟳','Loading'],saving:['◌','Saving'],saved:['✓','Synced'],error:['✗','Error'],nodb:['○','Connected']};
+  const s=states[state]||states.idle;
+  icon.textContent=s[0]; text.textContent=s[1];
+}
+
+// ============================
+// CSV PARSER
+// ============================
+function parseCSVLine(line){
+  const result=[]; let cur='', inQ=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+    else if(c===','&&!inQ){result.push(cur.trim());cur='';}
+    else cur+=c;
+  }
+  result.push(cur.trim()); return result;
+}
+
+function parseZomatoCSV(text,fileName){
+  const lines=text.split('\n').filter(l=>l.trim());
+  if(lines.length<2)return null;
+  const headers=parseCSVLine(lines[0]);
+  const weekLabel=headers[6]||headers.slice(6)[0]||'Unknown';
+  const wkMatch=weekLabel.match(/Week\s*(\d+)[,\s]+(\d{4})/i);
+  const weekNum=wkMatch?parseInt(wkMatch[1]):99;
+  const weekYear=wkMatch?parseInt(wkMatch[2]):2026;
+  const sortKey=weekYear*100+weekNum;
+  const stores={};
+  for(let i=1;i<lines.length;i++){
+    const c=parseCSVLine(lines[i]);
+    if(c.length<7)continue;
+    const id=c[0].trim(),metric=c[5].trim();
+    if(!id)continue;
+    const val=parseFloat(c[6])||0;
+    if(!stores[id])stores[id]={id,name:c[1].trim(),subzone:c[2].trim(),metrics:{}};
+    stores[id].metrics[metric]=val;
+  }
+  const storeList=Object.values(stores);
+  const combined={};
+  storeList.forEach(s=>{Object.entries(s.metrics).forEach(([k,v])=>{combined[k]=(combined[k]||0)+v;});});
+  const n=storeList.length||1;
+  combined['Online %']=storeList.reduce((a,s)=>a+(s.metrics['Online %']||0),0)/n;
+  combined['Average rating']=storeList.reduce((a,s)=>a+(s.metrics['Average rating']||0),0)/n;
+  combined['Impressions to menu (%)']=storeList.reduce((a,s)=>a+(s.metrics['Impressions to menu (%)']||0),0)/n;
+  combined['Menu to cart (%)']=storeList.reduce((a,s)=>a+(s.metrics['Menu to cart (%)']||0),0)/n;
+  combined['Cart to orders (%)']=storeList.reduce((a,s)=>a+(s.metrics['Cart to orders (%)']||0),0)/n;
+  combined['Ads CTR (%)']=storeList.reduce((a,s)=>a+(s.metrics['Ads CTR (%)']||0),0)/n;
+  combined['Ads ROI']=storeList.reduce((a,s)=>a+(s.metrics['Ads ROI']||0),0)/n;
+  combined['KPT (in minutes)']=storeList.reduce((a,s)=>a+(s.metrics['KPT (in minutes)']||0),0)/n;
+  const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const monthLabel=monthNames[Math.min(Math.floor((weekNum-1)/4.33),11)]+' '+weekYear;
+  return{weekLabel,weekNum,weekYear,sortKey,monthLabel,stores:storeList,combined,fileName};
+}
+
+// ============================
+// HEALTH SCORE
+// ============================
+function healthScore(w){
+  const cm=w.combined;
+  const online=cm['Online %']||0,orders=cm['Delivered orders']||0,impr=cm['Impressions']||0;
+  const conv=impr>0?(orders/impr*100):0,ads=cm['Ads spend (Rs)']||0;
+  const repeat=cm['Repeat user orders']||0,ctr=cm['Impressions to menu (%)']||0,rating=cm['Average rating']||0;
+  return Math.round(
+    Math.min(online/98*25,25)+Math.min(conv/2*20,20)+(ads>0?15:0)+
+    (orders>0?Math.min(repeat/orders*15,15):0)+Math.min(ctr/8*10,10)+
+    Math.min((rating/5)*10,10)+Math.min(orders/50*5,5)
+  );
+}
+
+function scoreColor(s){return s>=80?'var(--green)':s>=60?'var(--yellow)':'var(--red)';}
+function scoreGrade(s){return s>=80?'Excellent':s>=70?'Good':s>=50?'Needs Attention':'Critical';}
+
+// ============================
+// FLAG GENERATION
+// ============================
+function makeFlagKey(weekLabel,store,msg){
+  try{return btoa(encodeURIComponent(weekLabel+'|'+store+'|'+msg)).slice(0,40);}
+  catch(e){return (weekLabel+store+msg).replace(/[^a-zA-Z0-9]/g,'').slice(0,40);}
+}
+
+function generateFlags(w){
+  const flags=[];
+  const addFlag=(level,store,msg)=>{
+    const key=makeFlagKey(w.weekLabel,store,msg);
+    flags.push({key,level,store,msg,week:w.weekLabel,weekNum:w.weekNum,weekYear:w.weekYear});
+  };
+  // Combined level
+  const cm=w.combined;
+  const impr=cm['Impressions']||0,orders=cm['Delivered orders']||0;
+  const offline=cm['Offline time (in hours)']||0,ads=cm['Ads spend (Rs)']||0;
+  const conv=impr>0?(orders/impr*100):0,ctr=cm['Impressions to menu (%)']||0;
+  const menuOpens=cm['Menu opens']||0,cartBuilds=cm['Cart builds']||0;
+  const repeat=cm['Repeat user orders']||0,rating=cm['Average rating']||0;
+  if(orders===0&&impr>0)addFlag('crit','Combined','Zero orders despite '+impr.toLocaleString()+' impressions');
+  if(offline>5)addFlag('crit','Combined','High offline time: '+offline.toFixed(1)+' hrs total');
+  if(ads===0)addFlag('crit','Combined','No ads running this week — zero paid visibility');
+  if(conv<1&&impr>0)addFlag('crit','Combined','Overall conversion rate below 1% ('+conv.toFixed(2)+'%)');
+  if(ctr>0&&ctr<5&&impr>100)addFlag('warn','Combined','Low menu CTR: '+ctr.toFixed(1)+'% (target >8%)');
+  if(menuOpens>5&&cartBuilds===0)addFlag('warn','Combined','Menu opens not converting to cart builds');
+  if(orders>0&&repeat===0)addFlag('warn','Combined','Zero repeat orders — retention at risk');
+  if(rating>=4.0)addFlag('info','Combined','Rating '+rating.toFixed(1)+'★ — positive signal');
+  // Per-store
+  w.stores.forEach(s=>{
+    const sm=s.metrics;
+    const so=sm['Delivered orders']||0,si=sm['Impressions']||0;
+    const soff=sm['Offline time (in hours)']||0,sads=sm['Ads spend (Rs)']||0;
+    const sc=si>0?(so/si*100):0;
+    if(so===0&&si>0)addFlag('crit',s.name||s.subzone,'Zero orders at '+s.name+' despite impressions');
+    if(soff>3)addFlag('warn',s.name||s.subzone,s.name+': '+soff.toFixed(1)+' hrs offline');
+    if(sc<0.5&&si>50)addFlag('warn',s.name||s.subzone,s.name+': very low conversion '+sc.toFixed(2)+'%');
+  });
+  return flags;
+}
+
+function rebuildAlerts(){
+  allAlerts=[];
+  weeks.forEach(w=>{allAlerts.push(...generateFlags(w));});
+  const open=allAlerts.filter(a=>!flagStates[a.key]?.resolved).length;
+  const badge=document.getElementById('alert-badge');
+  if(open>0){badge.textContent=open;badge.style.display='inline';}
+  else{badge.style.display='none';}
+}
+
+// ============================
+// LOAD/SAVE DATA
+// ============================
+async function loadAllFromDB(){
+  try{
+    // Load weeks
+    const wRows=await sbSelect('weeks','?select=*&order=sort_key.asc');
+    weeks=wRows.map(r=>({
+      weekLabel:r.week_label,weekNum:r.week_num,weekYear:r.week_year,
+      sortKey:r.sort_key,monthLabel:r.month_label,fileName:r.file_name,
+      stores:(r.data?.stores||[]),combined:(r.data?.combined||{})
+    }));
+    // Load collabs
+    const cRows=await sbSelect('collabs','?select=*&order=id.desc');
+    collabs=cRows.map(r=>({
+      id:r.id,name:r.name,handle:r.handle,followers:r.followers,type:r.type,
+      cost:r.cost,date:r.date,contentType:r.content_type,views:r.views,
+      likes:r.likes,comments:r.comments,storyViews:r.story_views,
+      clicks:r.clicks,notes:r.notes,zomatoWeekIdx:r.zomato_week_idx
+    }));
+    // Load posts
+    const pRows=await sbSelect('posts','?select=*&order=date.desc');
+    posts=pRows.map(r=>({...r,...(r.metrics||{})}));
+    // Load flags
+    const fRows=await sbSelect('flags','?select=*');
+    flagStates={};
+    fRows.forEach(r=>{flagStates[r.flag_key]={resolved:r.resolved,note:r.note,resolvedAt:r.resolved_at};});
+    // Load brand brain
+    const bRows=await sbSelect('brand_brain','?select=*');
+    brandBrain={};
+    bRows.forEach(r=>{brandBrain[r.key]=r.value;});
+    return true;
+  }catch(e){console.error('Load error:',e);return false;}
+}
+
+async function saveWeekToDB(w){
+  setSavePill('saving');
+  try{
+    await sbUpsert('weeks',[{
+      week_label:w.weekLabel,week_num:w.weekNum,week_year:w.weekYear,
+      sort_key:w.sortKey,month_label:w.monthLabel,file_name:w.fileName||'',
+      data:{stores:w.stores,combined:w.combined}
+    }],'week_label');
+    setSavePill('saved');
+  }catch(e){console.error(e);setSavePill('error');}
+}
+
+async function savePostToDB(p){
+  setSavePill('saving');
+  try{
+    await sbUpsert('posts',[{
+      id:p.id,platform:p.platform,format:p.format,status:p.status,
+      date:p.date,title:p.title,caption:p.caption,notes:p.notes,
+      metrics:{
+        igReach:p.igReach,igLikes:p.igLikes,igComments:p.igComments,
+        igSaves:p.igSaves,igShares:p.igShares,igVisits:p.igVisits,
+        liImpressions:p.liImpressions,liReactions:p.liReactions,
+        liComments:p.liComments,liReposts:p.liReposts,liClicks:p.liClicks
+      }
+    }],'id');
+    setSavePill('saved');
+  }catch(e){console.error(e);setSavePill('error');}
+}
+
+async function saveCollabToDB(c){
+  setSavePill('saving');
+  try{
+    await sbUpsert('collabs',[{
+      id:c.id,name:c.name,handle:c.handle,followers:c.followers,type:c.type,
+      cost:c.cost,date:c.date,content_type:c.contentType,views:c.views,
+      likes:c.likes,comments:c.comments,story_views:c.storyViews,
+      clicks:c.clicks,notes:c.notes,zomato_week_idx:c.zomatoWeekIdx
+    }],'id');
+    setSavePill('saved');
+  }catch(e){console.error(e);setSavePill('error');}
+}
+
+async function saveFlagToDB(flag,note,resolved){
+  try{
+    await sbUpsert('flags',[{
+      flag_key:flag.key,resolved,note,
+      resolved_at:resolved?new Date().toISOString().split('T')[0]:null
+    }],'flag_key');
+  }catch(e){console.error(e);}
+}
+
+async function saveBrainField(key,section,value){
+  try{
+    await sbUpsert('brand_brain',[{key,section,value}],'key');
+    document.getElementById('brain-save-status').textContent='✓ Saved';
+    setTimeout(()=>{document.getElementById('brain-save-status').textContent='';},2000);
+  }catch(e){console.error(e);}
+}
+
+// ============================
+// NAVIGATION
+// ============================
+function nav(pane){
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  const el=document.getElementById('pane-'+pane);
+  if(el)el.classList.add('active');
+  // Find matching sidebar item
+  document.querySelectorAll('.sb-item').forEach(i=>{
+    if(i.getAttribute('onclick')==="nav('"+pane+"')")i.classList.add('active');
+  });
+  // Render on nav
+  const renders={
+    'overview':()=>renderOverview(),
+    'health':()=>renderHealth(),
+    'weekly':()=>renderWeekly(),
+    'monthly':()=>renderMonthly(),
+    'trends':()=>renderTrends(),
+    'funnel':()=>renderFunnel(),
+    'alerts':()=>renderAlerts(),
+    'heatmap':()=>renderHeatmap(),
+    'ai':()=>checkAIkey(),
+    'mkt-overview':()=>renderMktOverview(),
+    'mkt-calendar':()=>renderCalendar(),
+    'mkt-create':()=>checkContentAI(),
+    'mkt-tracker':()=>renderTracker(),
+    'influencer':()=>renderInfluencer(),
+    'brain':()=>renderBrain(),
+    'reports':()=>renderReports(),
+    'flags':()=>renderFlags()
+  };
+  if(renders[pane])renders[pane]();
+}
+
+// ============================
+// UPDATE TOPBAR
+// ============================
+function updateTopbar(){
+  document.getElementById('tb-weeks').textContent=weeks.length;
+  const totalSales=weeks.reduce((s,w)=>s+(w.combined['Sales (Rs)']||0),0);
+  document.getElementById('tb-sales').textContent='₹'+fmtNum(totalSales);
+  if(weeks.length){
+    const latest=weeks[weeks.length-1];
+    const hs=healthScore(latest);
+    const el=document.getElementById('tb-health');
+    el.textContent=hs;
+    el.className='tb-stat-val '+(hs>=70?'good':hs>=50?'warn':'crit');
+  }
+}
+
+// ============================
+// HELPERS
+// ============================
+function fmtNum(n){
+  if(n>=100000)return (n/100000).toFixed(1)+'L';
+  if(n>=1000)return (n/1000).toFixed(1)+'K';
+  return Math.round(n).toLocaleString();
+}
+function fmt2(n){return parseFloat(n||0).toFixed(2);}
+function fmtK(n){return n>=1000?(n/1000).toFixed(1)+'K':Math.round(n).toString();}
+function pct(a,b){return b>0?((a/b)*100).toFixed(1)+'%':'0%';}
+function fmtRs(n){return '₹'+fmtNum(n);}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+
+function makeChart(id,type,labels,datasets,opts={}){
+  const canvas=document.getElementById(id);
+  if(!canvas)return;
+  if(charts[id])charts[id].destroy();
+  const isDonut=type==='doughnut'||type==='pie';
+  charts[id]=new Chart(canvas,{
+    type,
+    data:{labels,datasets},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{
+          display:isDonut||(datasets.length>1),
+          position:'right',
+          labels:{color:'#94A3B8',font:{size:9},boxWidth:8,padding:6}
+        },
+        tooltip:{backgroundColor:'#1A2540',titleColor:'#E8EDF5',bodyColor:'#94A3B8',borderColor:'#2A3D5E',borderWidth:1}
+      },
+      scales:isDonut?{}:{
+        x:{ticks:{color:'#64748B',font:{size:8}},grid:{color:'rgba(255,255,255,.03)'}},
+        y:{ticks:{color:'#64748B',font:{size:8}},grid:{color:'rgba(255,255,255,.05)'}},
+        ...opts.extraScales
+      },
+      ...opts.extra
+    }
+  });
+}
+
+function populateWeekSelectors(){
+  const ids=['ov-week-sel','week-sel','fn-week-sel'];
+  ids.forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.innerHTML='';
+    [...weeks].reverse().forEach((w,i)=>{
+      const opt=document.createElement('option');
+      opt.value=weeks.length-1-i;
+      opt.textContent=w.weekLabel;
+      el.appendChild(opt);
+    });
+  });
+  // Month selector
+  const months=[...new Set(weeks.map(w=>w.monthLabel))];
+  const ms=document.getElementById('month-sel');
+  if(ms){
+    ms.innerHTML='';
+    months.reverse().forEach(m=>{
+      const opt=document.createElement('option');opt.value=m;opt.textContent=m;ms.appendChild(opt);
+    });
+  }
+  // Report selectors
+  ['rep-from','rep-to'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.innerHTML='';
+    weeks.forEach((w,i)=>{
+      const opt=document.createElement('option');opt.value=i;opt.textContent=w.weekLabel;el.appendChild(opt);
+    });
+    if(id==='rep-to')el.selectedIndex=el.options.length-1;
+  });
+}
+
+function renderSavedList(){
+  const el=document.getElementById('saved-list');
+  const cnt=document.getElementById('loaded-count');
+  cnt.textContent=weeks.length+' week'+(weeks.length!==1?'s':'');
+  if(!weeks.length){el.innerHTML='<div style="color:var(--text3);font-size:10px;padding:8px 0">No weeks loaded yet.</div>';return;}
+  el.innerHTML=weeks.map(w=>`
+    <div class="saved-file">
+      <div><div class="saved-file-name">${w.weekLabel}</div><div class="saved-file-meta">${w.stores.length} store${w.stores.length!==1?'s':''} · ${w.monthLabel} · ${w.fileName||''}</div></div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="chip ${healthScore(w)>=70?'g':healthScore(w)>=50?'y':'r'}">${healthScore(w)}</span>
+        <button class="btn-danger btn-xs" onclick="deleteWeek('${w.weekLabel}')">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function deleteWeek(label){
+  if(!confirm('Remove '+label+' from database?'))return;
+  await sbDelete('weeks','week_label',encodeURIComponent(label));
+  weeks=weeks.filter(w=>w.weekLabel!==label);
+  rebuildAlerts();updateTopbar();renderSavedList();populateWeekSelectors();
+}
+
+// ============================
+// FILE UPLOAD
+// ============================
+function handleDragOver(e){e.preventDefault();document.getElementById('upload-zone').classList.add('drag-over');}
+function handleDragLeave(e){document.getElementById('upload-zone').classList.remove('drag-over');}
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag-over');
+  handleFiles(e.dataTransfer.files);
+}
+
+function handleFiles(files){
+  const arr=Array.from(files);
+  const prog=document.getElementById('upload-progress');
+  prog.innerHTML='';
+  let done=0;
+  arr.forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=async(e)=>{
+      const parsed=parseZomatoCSV(e.target.result,file.name);
+      if(parsed){
+        const existing=weeks.findIndex(w=>w.weekLabel===parsed.weekLabel);
+        if(existing>=0)weeks[existing]=parsed;
+        else weeks.push(parsed);
+        weeks.sort((a,b)=>a.sortKey-b.sortKey);
+        if(SUPABASE_URL)await saveWeekToDB(parsed);
+        rebuildAlerts();updateTopbar();renderSavedList();populateWeekSelectors();
+        done++;
+        prog.innerHTML=`<div style="font-size:10px;color:var(--green);margin-top:6px">✓ Processed ${done} of ${arr.length} file${arr.length>1?'s':''}</div>`;
+      }else{
+        done++;
+        prog.innerHTML+=`<div style="font-size:10px;color:var(--red)">✗ Could not parse: ${file.name}</div>`;
+      }
+    };
+    reader.readAsText(file);
+  });
+}
+
+// ============================
+// DASHBOARD OVERVIEW
+// ============================
+function renderOverview(){
+  if(!weeks.length)return;
+  const sel=document.getElementById('ov-week-sel');
+  const idx=sel?parseInt(sel.value):weeks.length-1;
+  const w=weeks[idx]||weeks[weeks.length-1];
+  const cm=w.combined;
+  const orders=cm['Delivered orders']||0,sales=cm['Sales (Rs)']||0;
+  const impr=cm['Impressions']||0,online=cm['Online %']||0;
+  const conv=impr>0?(orders/impr*100):0;
+  const hs=healthScore(w);
+
+  document.getElementById('ov-sub').textContent=w.weekLabel+' · '+w.stores.length+' outlets';
+  document.getElementById('ov-kpis').innerHTML=`
+    <div class="kpi ${orders>0?'good':'crit'}"><div class="kpi-lbl">Delivered Orders</div><div class="kpi-val">${orders}</div><div class="kpi-sub">Placed: ${cm['Placed Orders']||0}</div></div>
+    <div class="kpi ${sales>0?'good':'crit'}"><div class="kpi-lbl">Sales</div><div class="kpi-val">${fmtRs(sales)}</div><div class="kpi-sub">₹${Math.round(sales/(orders||1))} avg order</div></div>
+    <div class="kpi ${impr>500?'good':'warn'}"><div class="kpi-lbl">Impressions</div><div class="kpi-val">${fmtK(impr)}</div><div class="kpi-sub">Menu CTR: ${fmt2(cm['Impressions to menu (%)']||0)}%</div></div>
+    <div class="kpi ${online>=90?'good':online>=70?'warn':'crit'}"><div class="kpi-lbl">Online %</div><div class="kpi-val">${fmt2(online)}%</div><div class="kpi-sub">Offline: ${fmt2(cm['Offline time (in hours)']||0)}h</div></div>
+    <div class="kpi ${hs>=70?'good':hs>=50?'warn':'crit'}"><div class="kpi-lbl">Health Score</div><div class="kpi-val">${hs}</div><div class="kpi-sub">${scoreGrade(hs)}</div></div>
+  `;
+
+  // Charts — last 8 weeks up to selected
+  const sliceEnd=idx+1, sliceStart=Math.max(0,sliceEnd-8);
+  const recent=weeks.slice(sliceStart,sliceEnd);
+  const labels=recent.map(wk=>wk.weekLabel.replace('Week ','W'));
+
+  makeChart('ch-orders-sales','bar',labels,[
+    {label:'Orders',data:recent.map(wk=>wk.combined['Delivered orders']||0),backgroundColor:'rgba(255,107,44,.7)',yAxisID:'y'},
+    {label:'Sales (₹)',data:recent.map(wk=>wk.combined['Sales (Rs)']||0),type:'line',borderColor:'var(--green)',backgroundColor:'transparent',yAxisID:'y1',tension:.3,pointRadius:2}
+  ],{extraScales:{y1:{type:'linear',position:'right',ticks:{color:'#64748B',font:{size:8}},grid:{drawOnChartArea:false}}}});
+
+  makeChart('ch-meal-mix','doughnut',['Breakfast','Lunch','Snacks','Dinner','Late Night'],[{
+    data:[cm['Breakfast orders']||0,cm['Lunch orders']||0,cm['Snacks orders']||0,cm['Dinner orders']||0,cm['Late night orders']||0],
+    backgroundColor:['rgba(245,158,11,.7)','rgba(59,130,246,.7)','rgba(255,107,44,.7)','rgba(139,92,246,.7)','rgba(100,116,139,.7)'],
+    borderWidth:0
+  }]);
+
+  makeChart('ch-users','bar',['New','Repeat','Lapsed'],[{
+    data:[cm['New user orders']||0,cm['Repeat user orders']||0,cm['Lapsed user orders']||0],
+    backgroundColor:['rgba(59,130,246,.7)','rgba(16,185,129,.7)','rgba(245,158,11,.7)'],
+    borderRadius:4
+  }],{extra:{plugins:{legend:{display:false}}}});
+
+  const adsSpend=cm['Ads spend (Rs)']||0,adsOrders=cm['Ads orders']||0,adsROI=cm['Ads ROI']||0;
+  makeChart('ch-ads','bar',['Spend (₹)','Attributed Orders','ROI x'],[{
+    data:[adsSpend,adsOrders*100,adsROI],
+    backgroundColor:['rgba(139,92,246,.7)','rgba(59,130,246,.7)','rgba(16,185,129,.7)'],
+    borderRadius:4
+  }],{extra:{plugins:{legend:{display:false}}}});
+
+  // Store comparison
+  const stEl=document.getElementById('store-table');
+  stEl.innerHTML=`<div class="store-row" style="border-bottom:1px solid var(--border)">
+    <div style="font-size:8px;color:var(--text3);text-transform:uppercase">Store</div>
+    <div style="font-size:8px;color:var(--text3);text-transform:uppercase">Orders</div>
+    <div style="font-size:8px;color:var(--text3);text-transform:uppercase">Sales</div>
+    <div style="font-size:8px;color:var(--text3);text-transform:uppercase">Impr</div>
+    <div style="font-size:8px;color:var(--text3);text-transform:uppercase">Online%</div>
+    <div style="font-size:8px;color:var(--text3);text-transform:uppercase">Rating</div>
+  </div>`+
+  w.stores.map(s=>`<div class="store-row">
+    <div class="store-name">${s.name||s.subzone}</div>
+    <div class="mono">${s.metrics['Delivered orders']||0}</div>
+    <div class="mono">${fmtRs(s.metrics['Sales (Rs)']||0)}</div>
+    <div class="mono">${fmtK(s.metrics['Impressions']||0)}</div>
+    <div class="mono ${(s.metrics['Online %']||0)>=90?'':''}">
+      <span style="color:${(s.metrics['Online %']||0)>=90?'var(--green)':(s.metrics['Online %']||0)>=70?'var(--yellow)':'var(--red)'}">${fmt2(s.metrics['Online %']||0)}%</span>
+    </div>
+    <div class="mono">${fmt2(s.metrics['Average rating']||0)}★</div>
+  </div>`).join('');
+
+  // Open flags for this week
+  const wFlags=allAlerts.filter(a=>a.week===w.weekLabel&&!flagStates[a.key]?.resolved);
+  const fEl=document.getElementById('ov-flags');
+  fEl.innerHTML=wFlags.length?wFlags.slice(0,4).map(f=>`
+    <div class="alert-item a-${f.level}">
+      <div class="alert-lbl a-${f.level}">${f.level.toUpperCase()}</div>
+      <div class="alert-msg">${f.msg}</div>
+      <div class="alert-meta">${f.store}</div>
+    </div>`).join('')+(wFlags.length>4?`<div style="font-size:10px;color:var(--text3);padding:4px">+${wFlags.length-4} more — see All Alerts</div>`:'')
+    :'<div style="font-size:10px;color:var(--green);padding:8px 0">✓ No critical open flags this week</div>';
+}
+
+// ============================
+// HEALTH SCORE VIEW
+// ============================
+function renderHealth(){
+  if(!weeks.length)return;
+  const w=weeks[weeks.length-1];
+  const hs=healthScore(w);
+  const cm=w.combined;
+  // Ring
+  const circ=314;
+  const offset=circ-(hs/100*circ);
+  const circle=document.getElementById('hr-circle');
+  circle.style.strokeDashoffset=offset;
+  circle.style.stroke=scoreColor(hs);
+  document.getElementById('hr-num').textContent=hs;
+  document.getElementById('hr-grade').textContent=scoreGrade(hs);
+  document.getElementById('hr-grade').style.color=scoreColor(hs);
+  document.getElementById('hr-summary').textContent='Based on '+w.weekLabel;
+
+  // Breakdown
+  const online=cm['Online %']||0,orders=cm['Delivered orders']||0,impr=cm['Impressions']||0;
+  const conv=impr>0?(orders/impr*100):0,ads=cm['Ads spend (Rs)']||0;
+  const repeat=cm['Repeat user orders']||0,ctr=cm['Impressions to menu (%)']||0,rating=cm['Average rating']||0;
+  const components=[
+    {label:'Online Availability',score:Math.min(online/98*25,25),max:25,val:fmt2(online)+'%'},
+    {label:'Conversion Rate',score:Math.min(conv/2*20,20),max:20,val:fmt2(conv)+'%'},
+    {label:'Ads Running',score:ads>0?15:0,max:15,val:ads>0?'Yes':'No'},
+    {label:'Repeat Customer Rate',score:orders>0?Math.min(repeat/orders*15,15):0,max:15,val:orders>0?fmt2(repeat/orders*100)+'%':'0%'},
+    {label:'Menu CTR',score:Math.min(ctr/8*10,10),max:10,val:fmt2(ctr)+'%'},
+    {label:'Average Rating',score:Math.min((rating/5)*10,10),max:10,val:fmt2(rating)+'★'},
+    {label:'Order Volume',score:Math.min(orders/50*5,5),max:5,val:orders+' orders'}
+  ];
+  document.getElementById('health-breakdown').innerHTML=components.map(c=>{
+    const pctVal=(c.score/c.max*100);
+    const color=pctVal>=70?'var(--green)':pctVal>=40?'var(--yellow)':'var(--red)';
+    return `<div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px">
+        <span style="color:var(--text2)">${c.label}</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-weight:600;color:${color}">${Math.round(c.score)}/${c.max} · ${c.val}</span>
+      </div>
+      <div class="progress-wrap"><div class="progress-bar" style="width:${pctVal}%;background:${color}"></div></div>
+    </div>`;
+  }).join('');
+
+  // History chart
+  const histLabels=weeks.map(wk=>wk.weekLabel.replace('Week ','W'));
+  const histScores=weeks.map(wk=>healthScore(wk));
+  makeChart('ch-health-hist','line',histLabels,[{
+    label:'Health Score',data:histScores,
+    borderColor:'var(--accent)',backgroundColor:'rgba(255,107,44,.1)',
+    tension:.3,fill:true,pointRadius:3,
+    pointBackgroundColor:histScores.map(s=>scoreColor(s))
+  }]);
+
+  // What's dragging
+  const drag=document.getElementById('health-drag');
+  const issues=components.filter(c=>c.score/c.max<0.5).map(c=>`
+    <div class="alert-item a-warn">
+      <div class="alert-lbl a-warn">LOW SCORE</div>
+      <div class="alert-msg">${c.label}: ${Math.round(c.score)}/${c.max} points</div>
+      <div class="alert-meta">Current: ${c.val}</div>
+    </div>`).join('');
+  drag.innerHTML=issues||'<div style="color:var(--green);font-size:10px;padding:8px 0">✓ No major drag factors identified</div>';
+}
+
+// ============================
+// WEEKLY VIEW
+// ============================
+function renderWeekly(){
+  const sel=document.getElementById('week-sel');
+  if(!sel||!weeks.length)return;
+  if(!sel.options.length)populateWeekSelectors();
+  const idx=parseInt(sel.value)||0;
+  const w=weeks[idx]||weeks[0];
+  const cm=w.combined;
+
+  // KPIs
+  document.getElementById('wk-kpis').innerHTML=`
+    <div class="kpi good"><div class="kpi-lbl">Orders</div><div class="kpi-val">${cm['Delivered orders']||0}</div><div class="kpi-sub">Placed: ${cm['Placed Orders']||0}</div></div>
+    <div class="kpi good"><div class="kpi-lbl">Revenue</div><div class="kpi-val">${fmtRs(cm['Sales (Rs)']||0)}</div><div class="kpi-sub">Discounts: ${fmtRs(cm['Discount given (Rs)']||0)}</div></div>
+    <div class="kpi info"><div class="kpi-lbl">Impressions</div><div class="kpi-val">${fmtK(cm['Impressions']||0)}</div><div class="kpi-sub">Menu opens: ${cm['Menu opens']||0}</div></div>
+    <div class="kpi ${(cm['Online %']||0)>=90?'good':(cm['Online %']||0)>=70?'warn':'crit'}"><div class="kpi-lbl">Online %</div><div class="kpi-val">${fmt2(cm['Online %']||0)}%</div><div class="kpi-sub">KPT: ${fmt2(cm['KPT (in minutes)']||0)}m</div></div>
+  `;
+
+  // Store cards
+  document.getElementById('wk-stores').innerHTML=w.stores.map(s=>`
+    <div class="card" style="margin-bottom:0">
+      <div class="c-hdr"><div>${s.name||s.subzone}</div><span class="chip ${healthScore({combined:s.metrics,stores:[]})>=70?'g':'y'}">${healthScore({combined:s.metrics,stores:[]})}</span></div>
+      ${['Delivered orders','Sales (Rs)','Impressions','Online %','KPT (in minutes)','Average rating'].map(k=>`
+        <div class="info-row"><span class="info-row-lbl">${k}</span><span class="info-row-val">${k==='Sales (Rs)'?fmtRs(s.metrics[k]||0):fmt2(s.metrics[k]||0)+(k.includes('%')?'%':k.includes('rating')?'★':k.includes('minutes')?'m':'')}</span></div>
+      `).join('')}
+    </div>`).join('');
+
+  // Funnel
+  const fEl=document.getElementById('wk-funnel');
+  const funnelSteps=[
+    {label:'Impressions',val:cm['Impressions']||0,key:'Impressions'},
+    {label:'Menu Opens',val:cm['Menu opens']||0,key:'Menu opens'},
+    {label:'Cart Builds',val:cm['Cart builds']||0,key:'Cart builds'},
+    {label:'Orders',val:cm['Delivered orders']||0,key:'Delivered orders'}
+  ];
+  const maxV=funnelSteps[0].val||1;
+  fEl.innerHTML=funnelSteps.map((step,i)=>{
+    const conv=i>0&&funnelSteps[i-1].val>0?pct(step.val,funnelSteps[i-1].val):'—';
+    const colors=['var(--blue)','var(--purple)','var(--accent)','var(--green)'];
+    return `<div class="funnel-step">
+      <div class="funnel-label" style="font-size:9px">${step.label}</div>
+      <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${Math.max(2,(step.val/maxV*100))}%;background:${colors[i]}">${i>0?conv:''}</div></div>
+      <div class="funnel-val">${fmtK(step.val)}</div>
+    </div>`;
+  }).join('');
+
+  // Ads
+  const aEl=document.getElementById('wk-ads');
+  aEl.innerHTML=['Ads spend (Rs)','Ads impressions','Ads CTR (%)','Ads orders','Ads ROI'].map(k=>`
+    <div class="info-row"><span class="info-row-lbl">${k}</span><span class="info-row-val">${k==='Ads spend (Rs)'?fmtRs(cm[k]||0):k==='Ads ROI'?fmt2(cm[k]||0)+'x':fmt2(cm[k]||0)+(k.includes('%')?'%':'')}</span></div>`).join('');
+
+  // Time
+  const tEl=document.getElementById('wk-time');
+  ['Breakfast orders','Lunch orders','Snacks orders','Dinner orders','Late night orders'].forEach(k=>{
+    const v=cm[k]||0,total=cm['Delivered orders']||1;
+    tEl.innerHTML+=(tEl.innerHTML?'':'')+'';
+  });
+  tEl.innerHTML=['Breakfast orders','Lunch orders','Snacks orders','Dinner orders','Late night orders'].map(k=>{
+    const v=cm[k]||0,total=cm['Delivered orders']||1;
+    return `<div class="info-row"><span class="info-row-lbl">${k.replace(' orders','')}</span>
+      <div style="display:flex;align-items:center;gap:6px">
+        <div style="width:60px;height:4px;background:var(--bg3);border-radius:2px"><div style="width:${Math.min(100,v/total*100)}%;height:100%;background:var(--accent);border-radius:2px"></div></div>
+        <span class="info-row-val">${v}</span>
+      </div></div>`;
+  }).join('');
+
+  // Customer
+  document.getElementById('wk-customer').innerHTML=`
+    <div class="info-row"><span class="info-row-lbl">New Users</span><span class="info-row-val" style="color:var(--blue)">${cm['New user orders']||0}</span></div>
+    <div class="info-row"><span class="info-row-lbl">Repeat Users</span><span class="info-row-val" style="color:var(--green)">${cm['Repeat user orders']||0}</span></div>
+    <div class="info-row"><span class="info-row-lbl">Lapsed Users</span><span class="info-row-val" style="color:var(--yellow)">${cm['Lapsed user orders']||0}</span></div>
+    <div class="info-row"><span class="info-row-lbl">Bad Orders</span><span class="info-row-val" style="color:var(--red)">${cm['Bad orders']||0}</span></div>
+    <div class="info-row"><span class="info-row-lbl">Rated Orders</span><span class="info-row-val">${cm['Rated orders']||0}</span></div>
+    <div class="info-row"><span class="info-row-lbl">Avg Rating</span><span class="info-row-val">${fmt2(cm['Average rating']||0)}★</span></div>
+  `;
+
+  // Week flags
+  const wkFlags=allAlerts.filter(a=>a.week===w.weekLabel);
+  document.getElementById('wk-flags').innerHTML=wkFlags.length?wkFlags.map(f=>`
+    <div class="alert-item a-${f.level}">
+      <div class="alert-lbl a-${f.level}">${f.level.toUpperCase()}</div>
+      <div class="alert-msg">${f.msg}</div>
+      <div class="alert-meta">${f.store} · ${flagStates[f.key]?.resolved?'✓ Resolved':''}</div>
+    </div>`).join('')
+    :'<div style="color:var(--green);font-size:10px;padding:6px 0">✓ No flags generated for this week</div>';
+}
+
+// ============================
+// MONTHLY VIEW
+// ============================
+function renderMonthly(){
+  const sel=document.getElementById('month-sel');
+  if(!sel||!weeks.length)return;
+  const month=sel.value||weeks[weeks.length-1].monthLabel;
+  const mWeeks=weeks.filter(w=>w.monthLabel===month);
+  if(!mWeeks.length)return;
+
+  const sum=(key)=>mWeeks.reduce((s,w)=>s+(w.combined[key]||0),0);
+  const avg=(key)=>mWeeks.reduce((s,w)=>s+(w.combined[key]||0),0)/mWeeks.length;
+
+  document.getElementById('mo-kpis').innerHTML=`
+    <div class="kpi good"><div class="kpi-lbl">Total Orders</div><div class="kpi-val">${sum('Delivered orders')}</div><div class="kpi-sub">${mWeeks.length} weeks</div></div>
+    <div class="kpi good"><div class="kpi-lbl">Total Sales</div><div class="kpi-val">${fmtRs(sum('Sales (Rs)'))}</div><div class="kpi-sub">Avg/week: ${fmtRs(sum('Sales (Rs)')/mWeeks.length)}</div></div>
+    <div class="kpi info"><div class="kpi-lbl">Avg Online %</div><div class="kpi-val">${fmt2(avg('Online %'))}%</div><div class="kpi-sub">Avg offline: ${fmt2(avg('Offline time (in hours)'))}h/wk</div></div>
+    <div class="kpi info"><div class="kpi-lbl">Total Ads Spend</div><div class="kpi-val">${fmtRs(sum('Ads spend (Rs)'))}</div><div class="kpi-sub">ROI avg: ${fmt2(avg('Ads ROI'))}x</div></div>
+  `;
+
+  const labels=mWeeks.map(w=>w.weekLabel.replace('Week ','W'));
+  makeChart('ch-mo-orders','bar',labels,[{label:'Orders',data:mWeeks.map(w=>w.combined['Delivered orders']||0),backgroundColor:'rgba(255,107,44,.7)',borderRadius:4}],{extra:{plugins:{legend:{display:false}}}});
+  makeChart('ch-mo-sales','bar',labels,[{label:'Sales',data:mWeeks.map(w=>w.combined['Sales (Rs)']||0),backgroundColor:'rgba(16,185,129,.7)',borderRadius:4}],{extra:{plugins:{legend:{display:false}}}});
+
+  // Month comparison
+  const allMonths=[...new Set(weeks.map(w=>w.monthLabel))];
+  const moData=allMonths.map(m=>{
+    const mw=weeks.filter(wk=>wk.monthLabel===m);
+    return{label:m,orders:mw.reduce((s,w)=>s+(w.combined['Delivered orders']||0),0),sales:mw.reduce((s,w)=>s+(w.combined['Sales (Rs)']||0),0)};
+  });
+  document.getElementById('mo-compare').innerHTML=`<table class="tbl"><thead><tr><th>Month</th><th>Orders</th><th>Sales</th><th>Avg/Week</th></tr></thead><tbody>
+    ${moData.map(m=>`<tr><td style="color:var(--text);font-weight:600">${m.label}</td><td class="mono">${m.orders}</td><td class="mono">${fmtRs(m.sales)}</td><td class="mono">${fmtRs(m.sales/weeks.filter(w=>w.monthLabel===m.label).length)}</td></tr>`).join('')}
+  </tbody></table>`;
+}
+
+// ============================
+// TRENDS
+// ============================
+function renderTrends(){
+  if(!weeks.length)return;
+  const labels=weeks.map(w=>w.weekLabel.replace('Week ','W'));
+  const g=(key)=>weeks.map(w=>w.combined[key]||0);
+
+  makeChart('ch-tr-orders','line',labels,[{label:'Orders',data:g('Delivered orders'),borderColor:'var(--accent)',backgroundColor:'rgba(255,107,44,.08)',tension:.3,fill:true,pointRadius:2}],{extra:{plugins:{legend:{display:false}}}});
+  makeChart('ch-tr-sales','line',labels,[{label:'Sales (₹)',data:g('Sales (Rs)'),borderColor:'var(--green)',backgroundColor:'rgba(16,185,129,.08)',tension:.3,fill:true,pointRadius:2}],{extra:{plugins:{legend:{display:false}}}});
+  makeChart('ch-tr-impr','bar',labels,[
+    {label:'Impressions',data:g('Impressions'),backgroundColor:'rgba(59,130,246,.6)',yAxisID:'y'},
+    {label:'Menu Opens',data:g('Menu opens'),type:'line',borderColor:'var(--purple)',backgroundColor:'transparent',yAxisID:'y1',tension:.3,pointRadius:2}
+  ],{extraScales:{y1:{type:'linear',position:'right',ticks:{color:'#64748B',font:{size:8}},grid:{drawOnChartArea:false}}}});
+  const convData=weeks.map(w=>{const i=w.combined['Impressions']||0,o=w.combined['Delivered orders']||0;return i>0?(o/i*100):0;});
+  makeChart('ch-tr-conv','line',labels,[{label:'Conv %',data:convData,borderColor:'var(--yellow)',backgroundColor:'rgba(245,158,11,.08)',tension:.3,fill:true,pointRadius:2}],{extra:{plugins:{legend:{display:false}}}});
+  makeChart('ch-tr-online','line',labels,[
+    {label:'Online %',data:g('Online %'),borderColor:'var(--green)',yAxisID:'y',tension:.3,pointRadius:2},
+    {label:'Offline Hrs',data:g('Offline time (in hours)'),borderColor:'var(--red)',yAxisID:'y1',tension:.3,pointRadius:2}
+  ],{extraScales:{y1:{type:'linear',position:'right',ticks:{color:'#64748B',font:{size:8}},grid:{drawOnChartArea:false}}}});
+  makeChart('ch-tr-rating','line',labels,[{label:'Avg Rating',data:g('Average rating'),borderColor:'var(--yellow)',backgroundColor:'rgba(245,158,11,.08)',tension:.3,fill:true,pointRadius:3}],{extra:{plugins:{legend:{display:false}}}});
+  makeChart('ch-tr-ads','bar',labels,[
+    {label:'Ads Spend (₹)',data:g('Ads spend (Rs)'),backgroundColor:'rgba(139,92,246,.6)',yAxisID:'y'},
+    {label:'ROI',data:g('Ads ROI'),type:'line',borderColor:'var(--green)',backgroundColor:'transparent',yAxisID:'y1',tension:.3,pointRadius:2}
+  ],{extraScales:{y1:{type:'linear',position:'right',ticks:{color:'#64748B',font:{size:8}},grid:{drawOnChartArea:false}}}});
+  makeChart('ch-tr-users','bar',labels,[
+    {label:'New',data:g('New user orders'),backgroundColor:'rgba(59,130,246,.7)',stack:'users'},
+    {label:'Repeat',data:g('Repeat user orders'),backgroundColor:'rgba(16,185,129,.7)',stack:'users'},
+    {label:'Lapsed',data:g('Lapsed user orders'),backgroundColor:'rgba(245,158,11,.7)',stack:'users'}
+  ],{extra:{scales:{x:{stacked:true},y:{stacked:true}}}});
+}
+
+// ============================
+// FUNNEL PANE
+// ============================
+function renderFunnel(){
+  const sel=document.getElementById('fn-week-sel');
+  const idx=sel?parseInt(sel.value):weeks.length-1;
+  const w=weeks[idx]||weeks[weeks.length-1];
+  if(!w)return;
+  const cm=w.combined;
+  const steps=[
+    {label:'Impressions',val:cm['Impressions']||0,bench:'—',color:'var(--blue)'},
+    {label:'Menu Opens',val:cm['Menu opens']||0,bench:'>8%',color:'var(--purple)',rate:pct(cm['Menu opens']||0,cm['Impressions']||1)},
+    {label:'Cart Builds',val:cm['Cart builds']||0,bench:'>30%',color:'var(--accent)',rate:pct(cm['Cart builds']||0,cm['Menu opens']||1)},
+    {label:'Delivered Orders',val:cm['Delivered orders']||0,bench:'>60%',color:'var(--green)',rate:pct(cm['Delivered orders']||0,cm['Cart builds']||1)}
+  ];
+  const maxV=steps[0].val||1;
+  document.getElementById('funnel-viz').innerHTML=`<div class="card">`+steps.map((s,i)=>`
+    <div class="funnel-step" style="margin-bottom:12px">
+      <div style="width:100px;text-align:right">
+        <div style="font-size:10px;color:var(--text2)">${s.label}</div>
+        ${s.bench!=='—'?`<div style="font-size:8px;color:var(--text3)">Bench: ${s.bench}</div>`:''}
+      </div>
+      <div class="funnel-bar-wrap" style="height:32px">
+        <div class="funnel-bar" style="width:${Math.max(1,(s.val/maxV*100))}%;background:${s.color};">
+          <span style="font-size:10px;font-weight:700">${fmtK(s.val)}</span>
+        </div>
+      </div>
+      <div style="width:60px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:${s.color}">${s.rate||''}</div>
+    </div>`).join('')+`</div>`;
+
+  // Per-store funnel
+  document.getElementById('funnel-stores').innerHTML=w.stores.map(s=>`
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px;font-weight:600;color:var(--text);margin-bottom:4px">${s.name||s.subzone}</div>
+      ${['Impressions','Menu opens','Cart builds','Delivered orders'].map(k=>`
+        <div class="info-row"><span class="info-row-lbl" style="font-size:9px">${k}</span><span class="info-row-val">${fmtK(s.metrics[k]||0)}</span></div>`).join('')}
+    </div>`).join('');
+
+  // Trend chart
+  const labels=weeks.map(wk=>wk.weekLabel.replace('Week ','W'));
+  const convData=weeks.map(wk=>{const i=wk.combined['Impressions']||0,o=wk.combined['Delivered orders']||0;return i>0?(o/i*100):0;});
+  const ctrData=weeks.map(wk=>wk.combined['Impressions to menu (%)']||0);
+  const m2cData=weeks.map(wk=>wk.combined['Menu to cart (%)']||0);
+  makeChart('ch-fn-trend','line',labels,[
+    {label:'Overall Conv%',data:convData,borderColor:'var(--accent)',tension:.3,pointRadius:2},
+    {label:'Impr→Menu%',data:ctrData,borderColor:'var(--blue)',tension:.3,pointRadius:2},
+    {label:'Menu→Cart%',data:m2cData,borderColor:'var(--purple)',tension:.3,pointRadius:2}
+  ]);
+}
+
+// ============================
+// ALERTS
+// ============================
+function setAlertFilter(f,el){
+  alertFilter=f;
+  document.querySelectorAll('#pane-alerts .f-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderAlerts();
+}
+
+function renderAlerts(){
+  let filtered=allAlerts;
+  if(alertFilter!=='all')filtered=filtered.filter(a=>a.level===alertFilter);
+  document.getElementById('alerts-sub').textContent=filtered.length+' alerts ('+allAlerts.filter(a=>!flagStates[a.key]?.resolved).length+' open)';
+  document.getElementById('alerts-list').innerHTML=filtered.map(a=>`
+    <div class="alert-item a-${a.level}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <div><span class="alert-lbl a-${a.level}">${a.level.toUpperCase()}</span> <span style="font-size:9px;color:var(--text3);margin-left:6px">${a.week} · ${a.store}</span></div>
+        ${flagStates[a.key]?.resolved?'<span class="chip g">Resolved</span>':''}
+      </div>
+      <div class="alert-msg">${a.msg}</div>
+    </div>`).join('')||'<div class="empty-state"><div class="es-icon">✅</div><div class="es-title">No alerts</div></div>';
+}
+
+// ============================
+// HEATMAP
+// ============================
+function renderHeatmap(){
+  if(!weeks.length)return;
+  const renderHM=(containerId,key,label)=>{
+    const vals=weeks.map(w=>w.combined[key]||0);
+    const maxV=Math.max(...vals,1);
+    const el=document.getElementById(containerId);
+    el.innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center">
+      ${weeks.map((w,i)=>{
+        const v=vals[i],pct=v/maxV;
+        const cl=pct<0.1?'hm-0':pct<0.3?'hm-1':pct<0.5?'hm-2':pct<0.75?'hm-3':pct<0.9?'hm-4':'hm-5';
+        return `<div title="${w.weekLabel}: ${Math.round(v)}" class="heatmap-cell ${cl}" style="cursor:pointer"></div>`;
+      }).join('')}
+      <div style="margin-left:8px;font-size:9px;color:var(--text3)">Low → High</div>
+    </div>
+    <div style="margin-top:6px;font-size:9px;color:var(--text3)">Min: ${Math.round(Math.min(...vals))} · Max: ${Math.round(maxV)} · Avg: ${Math.round(vals.reduce((a,b)=>a+b,0)/vals.length)}</div>`;
+  };
+  renderHM('heatmap-orders','Delivered orders','Orders');
+  renderHM('heatmap-sales','Sales (Rs)','Sales');
+  renderHM('heatmap-online','Online %','Online %');
+  const convVals=weeks.map(w=>{const i=w.combined['Impressions']||0,o=w.combined['Delivered orders']||0;return i>0?(o/i*100):0;});
+  const el=document.getElementById('heatmap-conv');
+  const maxV=Math.max(...convVals,1);
+  el.innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:4px">
+    ${weeks.map((w,i)=>{const v=convVals[i],pct=v/maxV;const cl=pct<0.1?'hm-0':pct<0.3?'hm-1':pct<0.5?'hm-2':pct<0.75?'hm-3':pct<0.9?'hm-4':'hm-5';return `<div title="${w.weekLabel}: ${v.toFixed(2)}%" class="heatmap-cell ${cl}"></div>`;}).join('')}
+  </div>`;
+}
+
+// ============================
+// AI ANALYST
+// ============================
+function checkAIkey(){
+  const warn=document.getElementById('ai-groq-warn');
+  warn.style.display=GROQ_KEY?'none':'flex';
+  // Quick buttons
+  const questions=['What are my top 3 priorities this week?','What is my best performing week and why?','What is my month-on-month sales trend?','Why is my conversion rate low and what should I do?','Which outlet needs the most urgent attention?','How much revenue have I lost to offline hours total?','Based on our brand positioning, what marketing angle should we push this month?','Give me a complete action plan for next week.'];
+  document.getElementById('quick-btns').innerHTML=questions.map(q=>`<button class="q-btn" onclick="document.getElementById('ai-question').value='${q.replace(/'/g,"\\'")}'">${q}</button>`).join('');
+}
+
+function clearAI(){document.getElementById('ai-question').value='';document.getElementById('ai-output').textContent='Ask a question above to get AI-powered insights based on your actual data and brand context.';}
+
+function buildAIContext(){
+  let ctx='BRAND CONTEXT:\n';
+  Object.entries(brandBrain).forEach(([k,v])=>{if(v)ctx+=`${k}: ${v}\n`;});
+  ctx+='\nZOMATO PERFORMANCE DATA (last 8 weeks):\n';
+  const recent=weeks.slice(-8);
+  recent.forEach(w=>{
+    const cm=w.combined;
+    ctx+=`${w.weekLabel}: Orders=${cm['Delivered orders']||0}, Sales=₹${Math.round(cm['Sales (Rs)']||0)}, Impressions=${cm['Impressions']||0}, Online=${fmt2(cm['Online %']||0)}%, Rating=${fmt2(cm['Average rating']||0)}, Ads=₹${cm['Ads spend (Rs)']||0}\n`;
+  });
+  const totalOrders=weeks.reduce((s,w)=>s+(w.combined['Delivered orders']||0),0);
+  const totalSales=weeks.reduce((s,w)=>s+(w.combined['Sales (Rs)']||0),0);
+  const zeroWeeks=weeks.filter(w=>!w.combined['Delivered orders']).length;
+  const adWeeks=weeks.filter(w=>w.combined['Ads spend (Rs)']>0).length;
+  const openFlags=allAlerts.filter(a=>!flagStates[a.key]?.resolved).length;
+  ctx+=`\nAll-time: ${totalOrders} orders | ₹${Math.round(totalSales)} total sales | ${zeroWeeks} zero-order weeks | ${adWeeks} weeks with ads\nOpen flags: ${openFlags}`;
+  return ctx;
+}
+
+async function runAI(){
+  const q=document.getElementById('ai-question').value.trim();
+  if(!q||!GROQ_KEY)return;
+  const out=document.getElementById('ai-output');
+  const think=document.getElementById('ai-thinking');
+  const btn=document.getElementById('ai-run-btn');
+  out.textContent='Analysing...';out.classList.add('loading');
+  think.style.display='inline-block';btn.disabled=true;
+  const systemPrompt=`You are a senior business analyst and brand consultant for Meetha Pitara — a premium artisan gelato + Indian mithai fusion brand in Mumbai.\n\n${buildAIContext()}\n\nBe direct, specific, and reference actual numbers. Use ₹ for currency. Give actionable recommendations. Max 300 words. No fluff.`;
+  try{
+    const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+GROQ_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'system',content:systemPrompt},{role:'user',content:q}],max_tokens:1200,temperature:0.7})
+    });
+    const data=await r.json();
+    const text=data.choices?.[0]?.message?.content||'No response received.';
+    out.textContent=text;out.classList.remove('loading');
+  }catch(e){out.textContent='Error: '+e.message;out.classList.remove('loading');}
+  think.style.display='none';btn.disabled=false;
+}
+
+// ============================
+// MARKETING OVERVIEW
+// ============================
+function renderMktOverview(){
+  const pub=posts.filter(p=>p.status==='published');
+  const totalReach=pub.reduce((s,p)=>s+(p.igReach||0)+(p.liImpressions||0),0);
+  const engRates=pub.map(p=>{
+    if(p.platform==='ig')return p.igReach>0?((p.igLikes||0)+(p.igComments||0)+(p.igSaves||0)+(p.igShares||0))/p.igReach*100:0;
+    return p.liImpressions>0?((p.liReactions||0)+(p.liComments||0)+(p.liReposts||0))/p.liImpressions*100:0;
+  }).filter(r=>r>0);
+  const avgEng=engRates.length?engRates.reduce((a,b)=>a+b,0)/engRates.length:0;
+  const scheduled=posts.filter(p=>p.status==='scheduled').length;
+  const now=new Date();
+  const thisMonth=posts.filter(p=>{if(!p.date)return false;const d=new Date(p.date);return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();}).length;
+
+  document.getElementById('mkt-kpis').innerHTML=`
+    <div class="kpi good"><div class="kpi-lbl">Posts Published</div><div class="kpi-val">${pub.length}</div><div class="kpi-sub">Total: ${posts.length}</div></div>
+    <div class="kpi info"><div class="kpi-lbl">Total Reach</div><div class="kpi-val">${fmtK(totalReach)}</div><div class="kpi-sub">IG + LinkedIn</div></div>
+    <div class="kpi ${avgEng>=3?'good':avgEng>=1?'warn':'crit'}"><div class="kpi-lbl">Avg Engagement</div><div class="kpi-val">${avgEng.toFixed(1)}%</div><div class="kpi-sub">Bench: 3-5%</div></div>
+    <div class="kpi info"><div class="kpi-lbl">Scheduled</div><div class="kpi-val">${scheduled}</div><div class="kpi-sub">Upcoming posts</div></div>
+    <div class="kpi info"><div class="kpi-lbl">This Month</div><div class="kpi-val">${thisMonth}</div><div class="kpi-sub">Posts planned/live</div></div>
+  `;
+
+  // Charts
+  const recent=weeks.slice(-8);
+  const rLabels=recent.map(w=>w.weekLabel.replace('Week ','W'));
+  const reachByWeek=recent.map(w=>{
+    const wPosts=posts.filter(p=>p.date&&p.status==='published'&&Math.abs(new Date(p.date)-new Date(w.weekYear+'-01-01')-(w.weekNum-1)*7*86400000)<8*86400000);
+    return wPosts.reduce((s,p)=>s+(p.igReach||0)+(p.liImpressions||0),0);
+  });
+  makeChart('ch-mkt-reach','bar',rLabels,[{label:'Reach',data:reachByWeek,backgroundColor:'rgba(255,107,44,.7)',borderRadius:4}],{extra:{plugins:{legend:{display:false}}}});
+
+  // Engagement by platform
+  const platforms=['ig','li','lf'];
+  const platLabels=['Instagram','LinkedIn Brand','LinkedIn Founder'];
+  const platEng=platforms.map(pl=>{
+    const pPosts=pub.filter(p=>p.platform===pl);
+    const rates=pPosts.map(p=>{
+      if(pl==='ig')return p.igReach>0?((p.igLikes||0)+(p.igComments||0)+(p.igSaves||0)+(p.igShares||0))/p.igReach*100:0;
+      return p.liImpressions>0?((p.liReactions||0)+(p.liComments||0)+(p.liReposts||0))/p.liImpressions*100:0;
+    }).filter(r=>r>0);
+    return rates.length?rates.reduce((a,b)=>a+b,0)/rates.length:0;
+  });
+  makeChart('ch-mkt-eng','bar',platLabels,[{data:platEng,backgroundColor:['rgba(225,48,108,.7)','rgba(59,130,246,.7)','rgba(16,185,129,.7)'],borderRadius:4}],{extra:{plugins:{legend:{display:false}}}});
+
+  // Top 3
+  const sorted=[...pub].sort((a,b)=>{
+    const engA=a.platform==='ig'&&a.igReach>0?((a.igLikes||0)+(a.igComments||0)+(a.igSaves||0)+(a.igShares||0))/a.igReach*100:a.liImpressions>0?((a.liReactions||0)+(a.liComments||0)+(a.liReposts||0))/a.liImpressions*100:0;
+    const engB=b.platform==='ig'&&b.igReach>0?((b.igLikes||0)+(b.igComments||0)+(b.igSaves||0)+(b.igShares||0))/b.igReach*100:b.liImpressions>0?((b.liReactions||0)+(b.liComments||0)+(b.liReposts||0))/b.liImpressions*100:0;
+    return engB-engA;
+  }).slice(0,3);
+  document.getElementById('top-posts').innerHTML=sorted.length?sorted.map((p,i)=>{
+    const eng=p.platform==='ig'&&p.igReach>0?((p.igLikes||0)+(p.igComments||0)+(p.igSaves||0)+(p.igShares||0))/p.igReach*100:p.liImpressions>0?((p.liReactions||0)+(p.liComments||0)+(p.liReposts||0))/p.liImpressions*100:0;
+    return `<div class="top-post-item">
+      <div class="top-post-rank">${['🥇','🥈','🥉'][i]}</div>
+      <div class="top-post-info"><div class="top-post-title">${p.title||'Untitled'}</div><div class="top-post-meta">${p.platform==='ig'?'Instagram':p.platform==='li'?'LinkedIn Brand':'LinkedIn Founder'} · ${p.date||''}</div></div>
+      <div class="top-post-eng">${eng.toFixed(1)}%</div>
+    </div>`;
+  }).join(''):'<div style="color:var(--text3);font-size:10px">No published posts with metrics yet</div>';
+
+  // Format + Platform donuts
+  const formats=['reel','carousel','story','post'];
+  const fmtCounts=formats.map(f=>posts.filter(p=>p.format===f).length);
+  makeChart('ch-mkt-format','doughnut',['Reel','Carousel','Story','Post'],[{data:fmtCounts,backgroundColor:['rgba(225,48,108,.7)','rgba(139,92,246,.7)','rgba(245,158,11,.7)','rgba(59,130,246,.7)'],borderWidth:0}]);
+
+  const platCounts=['ig','li','lf'].map(pl=>posts.filter(p=>p.platform===pl).length);
+  makeChart('ch-mkt-platform','doughnut',['Instagram','LinkedIn Brand','LinkedIn Founder'],[{data:platCounts,backgroundColor:['rgba(225,48,108,.7)','rgba(59,130,246,.7)','rgba(16,185,129,.7)'],borderWidth:0}]);
+
+  // Correlation
+  const corrEl=document.getElementById('corr-viz');
+  const rWeeks=weeks.slice(-8);
+  const maxImpr=Math.max(...rWeeks.map(w=>w.combined['Impressions']||0),1);
+  corrEl.innerHTML=rWeeks.map(w=>{
+    const impr=w.combined['Impressions']||0;
+    const hasPost=posts.some(p=>p.date&&p.status==='published'&&Math.abs(new Date(p.date)-(new Date(w.weekYear+'-W'+String(w.weekNum).padStart(2,'0')+'-1').getTime()||new Date()))<8*86400000);
+    return `<div class="corr-row">
+      <div class="corr-week">${w.weekLabel.replace('Week ','W')}</div>
+      <div class="corr-bar-wrap"><div class="corr-bar ${hasPost?'has-post':'no-post'}" style="width:${Math.max(2,impr/maxImpr*100)}%"></div></div>
+      <div class="corr-dot ${hasPost?'yes':'no'}"></div>
+      <div class="corr-val">${fmtK(impr)}</div>
+    </div>`;
+  }).join('')+`<div style="font-size:9px;color:var(--text3);margin-top:8px;display:flex;gap:10px"><span><span class="corr-dot yes" style="display:inline-block"></span> Post published</span><span><span class="corr-dot no" style="display:inline-block"></span> No post</span></div>`;
+}
+
+// ============================
+// CONTENT CALENDAR
+// ============================
+function setCalFilter(f,el){
+  calFilterVal=f;
+  document.querySelectorAll('#pane-mkt-calendar .f-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderCalendar();
+}
+
+function calPrev(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
+function calNext(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalendar();}
+
+function renderCalendar(){
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('cal-month-lbl').textContent=months[calMonth]+' '+calYear;
+  const grid=document.getElementById('cal-grid');
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const startDow=firstDay===0?6:firstDay-1;
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const today=new Date();
+
+  let filteredPosts=posts;
+  if(calFilterVal==='ig')filteredPosts=posts.filter(p=>p.platform==='ig');
+  else if(calFilterVal==='li')filteredPosts=posts.filter(p=>p.platform==='li');
+  else if(calFilterVal==='lf')filteredPosts=posts.filter(p=>p.platform==='lf');
+  else if(calFilterVal==='published')filteredPosts=posts.filter(p=>p.status==='published');
+  else if(calFilterVal==='scheduled')filteredPosts=posts.filter(p=>p.status==='scheduled');
+
+  let html='';
+  for(let i=0;i<startDow;i++)html+=`<div class="cal-day other-month"></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const dateStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dayPosts=filteredPosts.filter(p=>p.date===dateStr);
+    const isToday=today.getDate()===d&&today.getMonth()===calMonth&&today.getFullYear()===calYear;
+    html+=`<div class="cal-day ${isToday?'today':''}" onclick="calDayClick('${dateStr}',event)">
+      <div class="cal-day-num">${d}</div>
+      <div class="cal-posts">
+        ${dayPosts.slice(0,3).map(p=>`<div class="pc-${p.platform}-${p.format||'post'}" onclick="event.stopPropagation();openPostModal(${p.id})">${p.title||p.format||'Post'}</div>`).join('')}
+        ${dayPosts.length>3?`<div style="font-size:8px;color:var(--text3)">+${dayPosts.length-3} more</div>`:''}
+      </div>
+    </div>`;
+  }
+  grid.innerHTML=html;
+}
+
+function calDayClick(date,e){
+  if(e.target!==e.currentTarget&&e.target.closest('.cal-day')!==e.currentTarget)return;
+  openPostModal(null,date);
+}
+
+// ============================
+// POST MODAL
+// ============================
+function updatePmFields(){
+  const plat=document.getElementById('pm-platform').value;
+  const fmtSel=document.getElementById('pm-format');
+  const fmtOptions={ig:['reel','carousel','story'],li:['post','carousel'],lf:['post','carousel']};
+  const fmtLabels={reel:'Reel',carousel:'Carousel/Doc',story:'Story',post:'Post'};
+  fmtSel.innerHTML=(fmtOptions[plat]||['post']).map(f=>`<option value="${f}">${fmtLabels[f]}</option>`).join('');
+  document.getElementById('pm-metrics-ig').style.display=plat==='ig'?'block':'none';
+  document.getElementById('pm-metrics-li').style.display=plat!=='ig'?'block':'none';
+}
+
+function openPostModal(postId=null,prefillDate=null){
+  editingPostId=postId;
+  const p=postId?posts.find(p=>p.id===postId):null;
+  document.getElementById('pm-title').textContent=p?'Edit Post':'New Post';
+  document.getElementById('pm-delete-btn').style.display=p?'inline-block':'none';
+  document.getElementById('pm-platform').value=p?.platform||'ig';
+  updatePmFields();
+  document.getElementById('pm-format').value=p?.format||'reel';
+  document.getElementById('pm-status').value=p?.status||'idea';
+  document.getElementById('pm-date').value=p?.date||prefillDate||'';
+  document.getElementById('pm-title-inp').value=p?.title||'';
+  document.getElementById('pm-caption').value=p?.caption||'';
+  document.getElementById('pm-notes').value=p?.notes||'';
+  const fields={reach:p?.igReach||0,likes:p?.igLikes||0,comments:p?.igComments||0,saves:p?.igSaves||0,shares:p?.igShares||0,visits:p?.igVisits||0};
+  if(p?.platform==='ig'){
+    ['reach','likes','comments','saves','shares','visits'].forEach(f=>{const el=document.getElementById('pm-ig-'+f);if(el)el.value=p?.['ig'+f.charAt(0).toUpperCase()+f.slice(1)]||0;});
+  }
+  ['impressions','reactions','comments','reposts','clicks'].forEach(f=>{const el=document.getElementById('pm-li-'+f);if(el)el.value=p?.['li'+f.charAt(0).toUpperCase()+f.slice(1)]||0;});
+  openModal('post-modal');
+}
+
+async function savePost(){
+  const plat=document.getElementById('pm-platform').value;
+  const p={
+    id:editingPostId||Date.now(),
+    platform:plat,format:document.getElementById('pm-format').value,
+    status:document.getElementById('pm-status').value,
+    date:document.getElementById('pm-date').value,
+    title:document.getElementById('pm-title-inp').value,
+    caption:document.getElementById('pm-caption').value,
+    notes:document.getElementById('pm-notes').value,
+    igReach:parseInt(document.getElementById('pm-ig-reach')?.value)||0,
+    igLikes:parseInt(document.getElementById('pm-ig-likes')?.value)||0,
+    igComments:parseInt(document.getElementById('pm-ig-comments')?.value)||0,
+    igSaves:parseInt(document.getElementById('pm-ig-saves')?.value)||0,
+    igShares:parseInt(document.getElementById('pm-ig-shares')?.value)||0,
+    igVisits:parseInt(document.getElementById('pm-ig-visits')?.value)||0,
+    liImpressions:parseInt(document.getElementById('pm-li-impressions')?.value)||0,
+    liReactions:parseInt(document.getElementById('pm-li-reactions')?.value)||0,
+    liComments:parseInt(document.getElementById('pm-li-comments')?.value)||0,
+    liReposts:parseInt(document.getElementById('pm-li-reposts')?.value)||0,
+    liClicks:parseInt(document.getElementById('pm-li-clicks')?.value)||0
+  };
+  const idx=posts.findIndex(x=>x.id===p.id);
+  if(idx>=0)posts[idx]=p;else posts.unshift(p);
+  if(SUPABASE_URL)await savePostToDB(p);
+  closeModal('post-modal');
+  renderCalendar();renderTracker();renderMktOverview();
+}
+
+async function deletePost(){
+  if(!editingPostId)return;
+  if(!confirm('Delete this post?'))return;
+  posts=posts.filter(p=>p.id!==editingPostId);
+  if(SUPABASE_URL)await sbDelete('posts','id',editingPostId);
+  closeModal('post-modal');
+  renderCalendar();renderTracker();renderMktOverview();
+}
+
+// ============================
+// POST TRACKER
+// ============================
+function renderTracker(){
+  const plat=document.getElementById('tracker-platform-filter')?.value||'all';
+  const status=document.getElementById('tracker-status-filter')?.value||'all';
+  let filtered=[...posts];
+  if(plat!=='all')filtered=filtered.filter(p=>p.platform===plat);
+  if(status!=='all')filtered=filtered.filter(p=>p.status===status);
+  filtered.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+
+  const platNames={ig:'Instagram',li:'LinkedIn Brand',lf:'LinkedIn Founder'};
+  document.getElementById('tracker-list').innerHTML=filtered.length?filtered.map(p=>{
+    const eng=p.platform==='ig'&&p.igReach>0?((p.igLikes||0)+(p.igComments||0)+(p.igSaves||0)+(p.igShares||0))/p.igReach*100:p.liImpressions>0?((p.liReactions||0)+(p.liComments||0)+(p.liReposts||0))/p.liImpressions*100:0;
+    return `<div class="post-card">
+      <div class="post-dot ${p.platform}"></div>
+      <div class="post-card-body">
+        <div class="post-card-title">${p.title||'Untitled Post'}</div>
+        <div class="post-card-meta">
+          <span>${platNames[p.platform]||p.platform}</span>
+          <span class="chip ${p.format==='reel'?'p':p.format==='carousel'?'p':p.format==='story'?'y':'b'}">${p.format||'post'}</span>
+          <span class="chip sc-${p.status}">${p.status}</span>
+          ${p.date?`<span>${p.date}</span>`:''}
+        </div>
+        ${p.status==='published'?`<div class="post-card-metrics">
+          ${p.platform==='ig'?[['Reach',p.igReach||0],['Likes',p.igLikes||0],['Saves',p.igSaves||0],['Comments',p.igComments||0]].map(([l,v])=>`<span class="metric-pill">${l} <span>${fmtK(v)}</span></span>`).join('')
+          :[['Impr',p.liImpressions||0],['React',p.liReactions||0],['Comments',p.liComments||0],['Clicks',p.liClicks||0]].map(([l,v])=>`<span class="metric-pill">${l} <span>${fmtK(v)}</span></span>`).join('')}
+          ${eng>0?`<span class="metric-pill">Eng <span style="color:var(--green)">${eng.toFixed(1)}%</span></span>`:''}
+        </div>`:''}
+      </div>
+      <button class="btn-icon btn-xs" onclick="openPostModal(${p.id})">✎</button>
+    </div>`;
+  }).join(''):'<div class="empty-state"><div class="es-icon">📝</div><div class="es-title">No posts yet</div><div class="es-sub">Create your first post using the + Post button</div></div>';
+}
+
+// ============================
+// AI CONTENT GENERATOR
+// ============================
+function checkContentAI(){
+  document.getElementById('ai-content-warn').style.display=GROQ_KEY?'none':'flex';
+  renderFormatBtns();
+}
+
+function setPlatform(p){
+  currentPlatform=p;
+  ['ig','li','lf'].forEach(pl=>{
+    const btn=document.getElementById('pt-'+pl);
+    btn.className='pt-btn pt-'+pl+(pl===p?' active':'');
+  });
+  renderFormatBtns();
+}
+
+function renderFormatBtns(){
+  const fmts={ig:[{v:'reel',l:'🎬 Reel'},{v:'carousel',l:'🖼 Carousel'},{v:'story',l:'⭕ Story'}],li:[{v:'post',l:'📝 Post'},{v:'carousel',l:'📄 Carousel'}],lf:[{v:'post',l:'📝 Post'},{v:'carousel',l:'📄 Carousel'}]};
+  const grid=document.getElementById('fmt-grid');
+  const options=fmts[currentPlatform]||fmts.ig;
+  if(!options.some(f=>f.v===currentFormat))currentFormat=options[0].v;
+  grid.style.gridTemplateColumns=`repeat(${options.length},1fr)`;
+  grid.innerHTML=options.map(f=>`<div class="fmt-btn ${f.v===currentFormat?'active':''}" onclick="setFormat('${f.v}')">${f.l}</div>`).join('');
+}
+
+function setFormat(f){currentFormat=f;renderFormatBtns();}
+
+function buildContentSystemPrompt(){
+  let ctx=`You are a social media content expert for Meetha Pitara.\n\nBRAND CONTEXT:\n`;
+  Object.entries(brandBrain).forEach(([k,v])=>{if(v)ctx+=`${k}: ${v}\n`;});
+  ctx+=`\nFull brand: Premium artisan gelato + Indian mithai fusion, Mumbai. Founder Kovid Dutta. Outlets: Andheri Lokhandwala + Dadar East. Zomato rating 4.0★.\nPositioning: "Indian mithai deserves the same world-class precision as any European dessert"\n\nGenerate content that is authentically Meetha Pitara. Use Hindi/Urdu phrases naturally where appropriate. Reference Mumbai, the gelato craft, the founder's passion, Indian dessert culture. Never sound generic. Always sound like Meetha Pitara.`;
+  return ctx;
+}
+
+function buildContentUserPrompt(){
+  const brief=document.getElementById('content-brief').value.trim();
+  const platMap={ig:'Instagram',li:'LinkedIn Brand Page',lf:'LinkedIn Founder (Kovid Dutta personal)'};
+  const fmtMap={reel:'Reel (with timestamps script)',carousel:'Carousel (slide by slide)',story:'Story (frame by frame)',post:'Text Post'};
+  let prompt=`Create ${platMap[currentPlatform]} ${fmtMap[currentFormat]} content for Meetha Pitara.`;
+  if(brief)prompt+=`\n\nTopic/Brief: ${brief}`;
+  if(currentPlatform==='ig'){
+    if(currentFormat==='reel')prompt+=`\n\nFormat output exactly as:\n🎬 HOOK (first 3 seconds):\n[hook line]\n\n📝 SCRIPT:\n[0:00-0:03] [visual] — "[text/voiceover]"\n(continue timestamps...)\n[0:28-0:30] [CTA visual] — "[CTA text]"\n\n📸 CAPTION:\n[full caption]\n\n🎵 SUGGESTED AUDIO:\n[audio suggestion]\n\n#️⃣ HASHTAGS:\n[15-20 hashtags on one line]`;
+    else if(currentFormat==='carousel')prompt+=`\n\nFormat: 🖼 SLIDE 1 — COVER:\nHeadline: ...\nSubtext: ...\n\n📄 SLIDES 2-6:\n[content per slide]\n\n🔚 LAST SLIDE — CTA:\n[CTA]\n\n📸 CAPTION:\n[caption]\n\n#️⃣ HASHTAGS:\n[hashtags]`;
+    else prompt+=`\n\nFormat: ⭕ FRAME 1:\nVisual: ...\nText overlay: "..."\nDuration: 5 seconds\n\n(continue frames...)\n\n⭕ LAST FRAME — CTA:\nLink sticker: "Order on Zomato"\n\n#️⃣ HASHTAGS:\n[hashtags]`;
+  }else if(currentPlatform==='li'){
+    prompt+=`\n\nFormat:\n📝 POST:\n[150-200 word community-focused brand post]\n\n💡 HOOK LINE:\n[scroll-stopping first line]\n\n📌 KEY TAKEAWAY:\n[one sentence value summary]`;
+  }else{
+    prompt+=`\n\nFormat:\n📝 POST:\n[150-200 word first-person founder post — personal story, insight, authentic Kovid voice, max 3 hashtags]\n\n💡 HOOK LINE:\n[scroll-stopping first line]\n\n📌 KEY TAKEAWAY:\n[one sentence]`;
+  }
+  return prompt;
+}
+
+async function generateContent(){
+  if(!GROQ_KEY)return;
+  const btn=document.getElementById('gen-btn');
+  btn.disabled=true;btn.textContent='⏳ Generating...';
+  const outEl=document.getElementById('gen-output');
+  const textEl=document.getElementById('gen-text');
+  outEl.style.display='block';
+  textEl.textContent='Generating content...';textEl.classList.add('loading');
+  try{
+    const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+GROQ_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'system',content:buildContentSystemPrompt()},{role:'user',content:buildContentUserPrompt()}],max_tokens:1500,temperature:0.8})
+    });
+    const data=await r.json();
+    let text=data.choices?.[0]?.message?.content||'No content generated.';
+    // Extract hashtags
+    const hashMatch=text.match(/#️⃣ HASHTAGS?:\n?([\s\S]*?)(\n\n|$)/i)||text.match(/(#[A-Za-z]+[\s\S]*?)$/);
+    if(hashMatch){
+      generatedHashtags=hashMatch[1].trim();
+      text=text.replace(hashMatch[0],'').trim();
+      document.getElementById('hashtag-content').textContent=generatedHashtags;
+      document.getElementById('gen-hashtags').style.display='block';
+    }else{document.getElementById('gen-hashtags').style.display='none';}
+    generatedContent=text;
+    textEl.textContent=text;textEl.classList.remove('loading');
+  }catch(e){textEl.textContent='Error: '+e.message;textEl.classList.remove('loading');}
+  btn.disabled=false;btn.textContent='✨ Generate Content';
+}
+
+function copyContent(){
+  const full=generatedContent+(generatedHashtags?'\n\n'+generatedHashtags:'');
+  navigator.clipboard.writeText(full).then(()=>{
+    const btn=event.target;btn.textContent='✓ Copied!';setTimeout(()=>btn.textContent='📋 Copy',1500);
+  });
+}
+
+function saveToCalendar(){
+  const p={
+    id:Date.now(),platform:currentPlatform,format:currentFormat,status:'draft',
+    date:'',title:document.getElementById('content-brief').value||'Generated '+currentFormat,
+    caption:generatedContent,notes:''
+  };
+  posts.unshift(p);
+  if(SUPABASE_URL)savePostToDB(p);
+  alert('Saved as draft! Visit Content Calendar to schedule it.');
+}
+
+// ============================
+// INFLUENCER ROI
+// ============================
+function calcCollabImpact(collab){
+  const wIdx=collab.zomatoWeekIdx>=0?collab.zomatoWeekIdx:findClosestWeekIdx(collab.date);
+  if(wIdx<0)return null;
+  const baselineWeeks=weeks.slice(Math.max(0,wIdx-4),wIdx);
+  const impactWeeks=weeks.slice(wIdx,Math.min(weeks.length,wIdx+3));
+  const avg=(arr,key)=>arr.length?arr.reduce((s,w)=>s+(w.combined[key]||0),0)/arr.length:0;
+  const bImpr=avg(baselineWeeks,'Impressions'),bOrd=avg(baselineWeeks,'Delivered orders'),bSales=avg(baselineWeeks,'Sales (Rs)');
+  const iImpr=avg(impactWeeks,'Impressions'),iOrd=avg(impactWeeks,'Delivered orders'),iSales=avg(impactWeeks,'Sales (Rs)');
+  const liftImpr=bImpr>0?(iImpr-bImpr)/bImpr*100:0;
+  const liftOrd=bOrd>0?(iOrd-bOrd)/bOrd*100:0;
+  const liftSales=bSales>0?(iSales-bSales)/bSales*100:0;
+  const attrRevenue=Math.max(0,(iSales-bSales)*impactWeeks.length);
+  const roi=collab.cost>0?(attrRevenue-collab.cost)/collab.cost*100:null;
+  const verdict=roi===null?'pending':roi>=100?'excellent':roi>=20?'good':roi>=-10?'breakeven':'loss';
+  return{bImpr,bOrd,bSales,iImpr,iOrd,iSales,liftImpr,liftOrd,liftSales,attrRevenue,roi,verdict};
+}
+
+function findClosestWeekIdx(date){
+  if(!date||!weeks.length)return weeks.length>0?0:-1;
+  const d=new Date(date);
+  let best=-1,bestDiff=Infinity;
+  weeks.forEach((w,i)=>{
+    const wd=new Date(w.weekYear+'-01-01');
+    wd.setDate(wd.getDate()+(w.weekNum-1)*7);
+    const diff=Math.abs(d-wd);
+    if(diff<bestDiff){bestDiff=diff;best=i;}
+  });
+  return best;
+}
+
+function renderInfluencer(){
+  // KPIs
+  const totalSpent=collabs.reduce((s,c)=>s+(c.cost||0),0);
+  const totalReach=collabs.reduce((s,c)=>s+(c.views||0)+(c.storyViews||0),0);
+  const impacts=collabs.map(c=>calcCollabImpact(c)).filter(Boolean);
+  const attrRev=impacts.reduce((s,i)=>s+i.attrRevenue,0);
+  const overallROI=totalSpent>0?(attrRev-totalSpent)/totalSpent*100:0;
+
+  document.getElementById('inf-kpis').innerHTML=`
+    <div class="kpi info"><div class="kpi-lbl">Total Collabs</div><div class="kpi-val">${collabs.length}</div></div>
+    <div class="kpi warn"><div class="kpi-lbl">Total Spent</div><div class="kpi-val">${fmtRs(totalSpent)}</div></div>
+    <div class="kpi info"><div class="kpi-lbl">Total IG Reach</div><div class="kpi-val">${fmtK(totalReach)}</div><div class="kpi-sub">Reels + Stories</div></div>
+    <div class="kpi ${overallROI>=0?'good':'crit'}"><div class="kpi-lbl">Attributed Revenue</div><div class="kpi-val">${fmtRs(attrRev)}</div><div class="kpi-sub">Overall ROI: ${overallROI.toFixed(0)}%</div></div>
+  `;
+
+  const list=document.getElementById('collab-list');
+  if(!collabs.length){list.innerHTML='<div class="empty-state"><div class="es-icon">📸</div><div class="es-title">No collabs yet</div><div class="es-sub">Click "+ Add Collab" to track your first influencer collaboration</div></div>';return;}
+  list.innerHTML=collabs.map(c=>{
+    const impact=calcCollabImpact(c);
+    const totalViews=(c.views||0)+(c.storyViews||0);
+    const eng=totalViews>0?((c.likes||0)+(c.comments||0))/totalViews*100:0;
+    const verdict=impact?.verdict||'pending';
+    return `<div class="collab-card">
+      <div class="collab-hdr">
+        <div><div class="collab-name">${c.name}</div><div class="collab-handle">${c.handle} · ${c.followers?.toLocaleString()||0} followers · ${c.type} · ${c.date||''}</div></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="chip ${c.type==='Paid'?'r':c.type==='Barter'?'y':'g'}">${c.type}</span>
+          <span class="verdict-${verdict}">${verdict.charAt(0).toUpperCase()+verdict.slice(1)} ROI</span>
+          <button class="btn-danger btn-xs" onclick="deleteCollab(${c.id})">✕</button>
+        </div>
+      </div>
+      <div class="collab-metrics">
+        <div class="collab-metric"><div class="collab-metric-val">${fmtK(c.views||0)}</div><div class="collab-metric-lbl">Reel Views</div></div>
+        <div class="collab-metric"><div class="collab-metric-val">${fmtK(c.storyViews||0)}</div><div class="collab-metric-lbl">Story Views</div></div>
+        <div class="collab-metric"><div class="collab-metric-val">${eng.toFixed(1)}%</div><div class="collab-metric-lbl">Engagement</div></div>
+      </div>
+      ${impact?`<div class="c-hdr" style="margin-bottom:6px"><div>Zomato Impact (${impact.impactWeeks?.length||0}wks after vs ${impact.baselineWeeks?.length||0}wks before)</div></div>
+      <div class="impact-row">
+        <div class="impact-cell"><div class="impact-val ${impact.liftImpr>=0?'up':'down'}">${impact.liftImpr>=0?'▲':'▼'}${Math.abs(impact.liftImpr).toFixed(1)}%</div><div class="impact-lbl">Impressions Lift</div></div>
+        <div class="impact-cell"><div class="impact-val ${impact.liftOrd>=0?'up':'down'}">${impact.liftOrd>=0?'▲':'▼'}${Math.abs(impact.liftOrd).toFixed(1)}%</div><div class="impact-lbl">Orders Lift</div></div>
+        <div class="impact-cell"><div class="impact-val ${impact.liftSales>=0?'up':'down'}">${impact.liftSales>=0?'▲':'▼'}${Math.abs(impact.liftSales).toFixed(1)}%</div><div class="impact-lbl">Sales Lift</div></div>
+      </div>
+      <div style="display:flex;gap:10px;font-size:10px;color:var(--text2)">
+        <span>Attributed Revenue: <strong style="color:var(--green)">${fmtRs(impact.attrRevenue)}</strong></span>
+        <span>Collab Cost: <strong style="color:var(--text)">${fmtRs(c.cost||0)}</strong></span>
+        ${impact.roi!==null?`<span>ROI: <strong style="color:${impact.roi>=0?'var(--green)':'var(--red)'}">${impact.roi.toFixed(0)}%</strong></span>`:''}
+      </div>
+      ${c.notes?`<div style="font-size:10px;color:var(--text3);margin-top:8px;padding:6px 8px;background:var(--bg3);border-radius:6px">${c.notes}</div>`:''}
+      `:'<div style="font-size:10px;color:var(--text3)">Add Zomato data to see impact analysis</div>'}
+    </div>`;
+  }).join('');
+}
+
+function openCollabModal(){openModal('collab-modal');}
+
+async function saveCollab(){
+  const c={
+    id:Date.now(),name:document.getElementById('cm-name').value,
+    handle:document.getElementById('cm-handle').value,
+    followers:parseInt(document.getElementById('cm-followers').value)||0,
+    type:document.getElementById('cm-type').value,
+    cost:parseFloat(document.getElementById('cm-cost').value)||0,
+    date:document.getElementById('cm-date').value,
+    contentType:document.getElementById('cm-content-type').value,
+    views:parseInt(document.getElementById('cm-views').value)||0,
+    likes:parseInt(document.getElementById('cm-likes').value)||0,
+    comments:parseInt(document.getElementById('cm-comments').value)||0,
+    storyViews:parseInt(document.getElementById('cm-story-views').value)||0,
+    clicks:parseInt(document.getElementById('cm-clicks').value)||0,
+    notes:document.getElementById('cm-notes').value,
+    zomatoWeekIdx:findClosestWeekIdx(document.getElementById('cm-date').value)
+  };
+  collabs.unshift(c);
+  if(SUPABASE_URL)await saveCollabToDB(c);
+  closeModal('collab-modal');
+  renderInfluencer();
+}
+
+async function deleteCollab(id){
+  if(!confirm('Remove this collab?'))return;
+  collabs=collabs.filter(c=>c.id!==id);
+  if(SUPABASE_URL)await sbDelete('collabs','id',id);
+  renderInfluencer();
+}
+
+// ============================
+// BRAND BRAIN
+// ============================
+const BRAIN_SCHEMA=[
+  {section:'🎯 Identity & Positioning',fields:[
+    {key:'brand_tagline',label:'Current Tagline',type:'input'},{key:'founding_story',label:'How It Started',type:'ta'},
+    {key:'mission',label:'Mission Statement',type:'ta'},{key:'vision',label:'Vision Statement',type:'ta'},
+    {key:'positioning',label:'Positioning Statement',type:'ta'},{key:'usp',label:'What Makes You Different',type:'ta'},
+    {key:'brand_stage',label:'Current Stage',type:'sel',opts:['Early Growth','Scaling','Established']}
+  ]},
+  {section:'👥 Target Audience',fields:[
+    {key:'primary_audience',label:'Primary Customer Profile',type:'ta'},{key:'audience_age',label:'Age Range',type:'input'},
+    {key:'audience_location',label:'Where They Live/Work',type:'input'},{key:'audience_psychographic',label:'What They Care About',type:'ta'},
+    {key:'not_for',label:'Who You Are NOT For',type:'ta'}
+  ]},
+  {section:'🎨 Voice & Tone',fields:[
+    {key:'brand_personality',label:'Brand Personality (3-5 adjectives)',type:'input'},
+    {key:'words_we_use',label:'Phrases/Words You Love',type:'ta'},{key:'words_avoid',label:'Phrases/Words to Never Say',type:'ta'},
+    {key:'emoji_rules',label:'How You Use Emojis',type:'input'},{key:'hindi_urdu_usage',label:'Hindi/Urdu as Brand Asset',type:'ta'}
+  ]},
+  {section:'🍦 Products',fields:[
+    {key:'hero_products',label:'Hero Products/Flavours',type:'ta'},{key:'seasonal_approach',label:'Seasonal/Limited Editions Approach',type:'ta'},
+    {key:'price_positioning',label:'Price Range & Positioning',type:'input'},{key:'feeling_goal',label:'What You Want Customers to Feel',type:'ta'}
+  ]},
+  {section:'📱 Platform Strategy',fields:[
+    {key:'ig_content_pillars',label:'Instagram Content Pillars (4-5 themes)',type:'ta'},
+    {key:'ig_posting_frequency',label:'Target Posting Frequency',type:'input'},
+    {key:'ig_what_works',label:'What Performs Well on IG',type:'ta'},{key:'ig_what_doesnt',label:'What to Avoid on IG',type:'ta'},
+    {key:'li_brand_angle',label:'LinkedIn Brand Page Strategy',type:'ta'},{key:'li_founder_angle',label:"Kovid's LinkedIn Angle",type:'ta'},
+    {key:'future_platforms',label:'Reddit/Discord Plans',type:'ta'}
+  ]},
+  {section:'🏪 Business Context',fields:[
+    {key:'outlets',label:'Current Outlets & Characteristics',type:'ta'},{key:'zomato_strategy',label:'Zomato Strategy',type:'ta'},
+    {key:'franchise_goals',label:'Franchise Expansion Plans',type:'ta'},{key:'competitors',label:'Competitors You Watch',type:'ta'},
+    {key:'biggest_problem',label:'Current Biggest Challenge',type:'ta'}
+  ]},
+  {section:'🎯 Goals',fields:[
+    {key:'sixmonth_goal',label:'Success in 6 Months',type:'ta'},{key:'kpis_that_matter',label:'Most Important Metrics',type:'ta'},
+    {key:'north_star',label:'Single North Star Metric',type:'input'}
+  ]}
+];
+
+function renderBrain(){
+  const container=document.getElementById('brain-sections');
+  container.innerHTML=BRAIN_SCHEMA.map((sec,si)=>`
+    <div class="brain-section">
+      <div class="brain-sec-hdr" onclick="toggleBrainSection(${si})">
+        <span>${sec.section}</span><span id="brain-toggle-${si}">▼</span>
+      </div>
+      <div class="brain-sec-body ${si===0?'open':''}" id="brain-body-${si}">
+        ${sec.fields.map(f=>`<div class="brain-field-row">
+          <label class="f-lbl">${f.label}</label>
+          ${f.type==='ta'?`<textarea class="ta" id="brain-${f.key}" onblur="debounceSaveBrain('${f.key}','${sec.section}')">${brandBrain[f.key]||''}</textarea>`
+          :f.type==='sel'?`<select class="sel" id="brain-${f.key}" onchange="debounceSaveBrain('${f.key}','${sec.section}')"><option value="">Select...</option>${f.opts.map(o=>`<option value="${o}" ${brandBrain[f.key]===o?'selected':''}>${o}</option>`).join('')}</select>`
+          :`<input class="inp" id="brain-${f.key}" value="${(brandBrain[f.key]||'').replace(/"/g,'&quot;')}" placeholder="" onblur="debounceSaveBrain('${f.key}','${sec.section}')">`}
+        </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function toggleBrainSection(idx){
+  const body=document.getElementById('brain-body-'+idx);
+  const toggle=document.getElementById('brain-toggle-'+idx);
+  const isOpen=body.classList.contains('open');
+  body.classList.toggle('open',!isOpen);
+  toggle.textContent=isOpen?'▶':'▼';
+}
+
+function debounceSaveBrain(key,section){
+  clearTimeout(brainDebounceTimers[key]);
+  brainDebounceTimers[key]=setTimeout(()=>{
+    const el=document.getElementById('brain-'+key);
+    if(!el)return;
+    const value=el.value;
+    brandBrain[key]=value;
+    if(SUPABASE_URL)saveBrainField(key,section,value);
+  },1000);
+}
+
+// ============================
+// FLAGS
+// ============================
+function setFlagFilter(f,el){
+  flagFilter=f;
+  document.querySelectorAll('#pane-flags .f-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderFlags();
+}
+
+function renderFlags(){
+  let filtered=allAlerts;
+  if(flagFilter==='open')filtered=allAlerts.filter(a=>!flagStates[a.key]?.resolved);
+  else if(flagFilter==='resolved')filtered=allAlerts.filter(a=>flagStates[a.key]?.resolved);
+
+  const resolved=allAlerts.filter(a=>flagStates[a.key]?.resolved).length;
+  const rateKpi=document.getElementById('flag-rate-kpi');
+  rateKpi.innerHTML=`<div class="kpi-lbl">Resolution Rate</div><div class="kpi-val">${allAlerts.length>0?Math.round(resolved/allAlerts.length*100):0}%</div><div class="kpi-sub">${resolved}/${allAlerts.length} flags</div>`;
+
+  document.getElementById('flag-list').innerHTML=filtered.map(f=>{
+    const state=flagStates[f.key]||{};
+    return `<div class="flag-card ${state.resolved?'resolved':''}" id="fcard-${f.key}">
+      <div class="flag-card-hdr">
+        <span class="chip ${f.level==='crit'?'r':f.level==='warn'?'y':'b'}">${f.level.toUpperCase()}</span>
+        <span class="flag-card-week">${f.week} · ${f.store}</span>
+        ${state.resolved?`<span class="chip g" style="margin-left:auto">✓ Resolved ${state.resolvedAt||''}</span>`:''}
+      </div>
+      <div class="alert-msg" style="font-size:12px">${f.msg}</div>
+      <div class="flag-note-row">
+        <input class="flag-note-input" id="fnote-${f.key}" placeholder="Add a note or fix..." value="${state.note||''}">
+        <button class="btn-${state.resolved?'secondary':'primary'} btn-sm" onclick="toggleFlag('${f.key}',${JSON.stringify(f).replace(/'/g,"&#39;")})">
+          ${state.resolved?'Reopen':'Resolve'}
+        </button>
+      </div>
+    </div>`;
+  }).join('')||'<div class="empty-state"><div class="es-icon">✅</div><div class="es-title">No flags in this view</div></div>';
+}
+
+async function toggleFlag(key,flag){
+  const note=document.getElementById('fnote-'+key)?.value||'';
+  const currentResolved=flagStates[key]?.resolved||false;
+  flagStates[key]={resolved:!currentResolved,note,resolvedAt:!currentResolved?new Date().toISOString().split('T')[0]:null};
+  if(SUPABASE_URL)await saveFlagToDB(flag,note,!currentResolved);
+  rebuildAlerts();renderFlags();
+}
+
+// ============================
+// REPORTS
+// ============================
+function renderReports(){
+  populateWeekSelectors();
+}
+
+function exportCSV(type){
+  let csv='',filename='';
+  if(type==='weekly'){
+    csv='Week,Orders,Sales,Impressions,Menu Opens,Cart Builds,Online%,Offline Hrs,New Users,Repeat Users,Ads Spend,Ads ROI\n';
+    weeks.forEach(w=>{const c=w.combined;csv+=`"${w.weekLabel}",${c['Delivered orders']||0},${c['Sales (Rs)']||0},${c['Impressions']||0},${c['Menu opens']||0},${c['Cart builds']||0},${c['Online %']||0},${c['Offline time (in hours)']||0},${c['New user orders']||0},${c['Repeat user orders']||0},${c['Ads spend (Rs)']||0},${c['Ads ROI']||0}\n`;});
+    filename='meetha-pitara-weekly.csv';
+  }else if(type==='monthly'){
+    const months=[...new Set(weeks.map(w=>w.monthLabel))];
+    csv='Month,Weeks,Total Orders,Total Sales,Avg Online%,Total Ads Spend\n';
+    months.forEach(m=>{const mw=weeks.filter(w=>w.monthLabel===m);const sum=k=>mw.reduce((s,w)=>s+(w.combined[k]||0),0);csv+=`"${m}",${mw.length},${sum('Delivered orders')},${sum('Sales (Rs)')},${(sum('Online %')/mw.length).toFixed(1)},${sum('Ads spend (Rs)')}\n`;});
+    filename='meetha-pitara-monthly.csv';
+  }else if(type==='influencer'){
+    csv='Name,Handle,Followers,Type,Cost,Date,Views,Story Views,Likes,Comments,Clicks,Attributed Revenue,ROI%\n';
+    collabs.forEach(c=>{const i=calcCollabImpact(c);csv+=`"${c.name}","${c.handle}",${c.followers||0},"${c.type}",${c.cost||0},"${c.date||''}",${c.views||0},${c.storyViews||0},${c.likes||0},${c.comments||0},${c.clicks||0},${i?i.attrRevenue.toFixed(0):0},${i&&i.roi!==null?i.roi.toFixed(0):'pending'}\n`;});
+    filename='meetha-pitara-influencers.csv';
+  }else if(type==='flags'){
+    csv='Week,Store,Level,Message,Resolved,Note,Resolved At\n';
+    allAlerts.forEach(f=>{const st=flagStates[f.key]||{};csv+=`"${f.week}","${f.store}","${f.level}","${f.msg}",${st.resolved||false},"${st.note||''}","${st.resolvedAt||''}"\n`;});
+    filename='meetha-pitara-flags.csv';
+  }else if(type==='posts'){
+    csv='Platform,Format,Status,Date,Title,Reach/Impressions,Likes/Reactions,Saves,Engagement%\n';
+    posts.forEach(p=>{const eng=p.platform==='ig'&&p.igReach>0?((p.igLikes||0)+(p.igComments||0)+(p.igSaves||0)+(p.igShares||0))/p.igReach*100:p.liImpressions>0?((p.liReactions||0)+(p.liComments||0)+(p.liReposts||0))/p.liImpressions*100:0;csv+=`"${p.platform}","${p.format}","${p.status}","${p.date||''}","${(p.title||'').replace(/"/g,'""')}",${p.platform==='ig'?p.igReach||0:p.liImpressions||0},${p.platform==='ig'?p.igLikes||0:p.liReactions||0},${p.igSaves||0},${eng.toFixed(1)}\n`;});
+    filename='meetha-pitara-posts.csv';
+  }
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();
+}
+
+function previewReport(){
+  const html=buildReportHTML();
+  const prev=document.getElementById('report-preview');
+  prev.innerHTML='<div class="card" style="margin-top:12px"><div class="c-hdr"><div>Report Preview</div><button class="btn-secondary btn-sm" onclick="document.getElementById(\'report-preview\').innerHTML=\'\'">✕ Close</button></div><div style="background:#fff;color:#000;padding:20px;border-radius:8px;font-family:Arial,sans-serif;font-size:11px">'+html+'</div></div>';
+}
+
+function generateReport(){
+  const html=buildReportHTML();
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>${document.getElementById('rep-title').value}</title><style>body{font-family:Arial,sans-serif;font-size:11px;color:#000;padding:20px}h1{font-size:18px}h2{font-size:14px;border-bottom:1px solid #ccc;padding-bottom:4px}table{width:100%;border-collapse:collapse;margin-bottom:12px}th,td{border:1px solid #ddd;padding:5px 7px;text-align:left}th{background:#f5f5f5;font-weight:700}@media print{body{font-size:10px}}</style></head><body>${html}<script>window.print();<\/script></body></html>`);
+  w.document.close();
+}
+
+function buildReportHTML(){
+  const from=parseInt(document.getElementById('rep-from')?.value||0);
+  const to=parseInt(document.getElementById('rep-to')?.value||weeks.length-1);
+  const title=document.getElementById('rep-title')?.value||'Meetha Pitara Report';
+  const by=document.getElementById('rep-by')?.value||'';
+  const range=weeks.slice(from,to+1);
+  if(!range.length)return '<p>No data in selected range.</p>';
+  const sum=k=>range.reduce((s,w)=>s+(w.combined[k]||0),0);
+  const avg=k=>sum(k)/(range.length||1);
+  const latest=range[range.length-1];
+  const hs=healthScore(latest);
+
+  let html=`<h1>${title}</h1>
+  <p><strong>Period:</strong> ${weeks[from]?.weekLabel||'—'} to ${weeks[to]?.weekLabel||'—'} | <strong>Prepared by:</strong> ${by} | <strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+  <h2>KPI Summary</h2>
+  <table><tr><th>Metric</th><th>Total</th><th>Avg/Week</th></tr>
+    <tr><td>Delivered Orders</td><td>${sum('Delivered orders')}</td><td>${(sum('Delivered orders')/range.length).toFixed(1)}</td></tr>
+    <tr><td>Sales (₹)</td><td>₹${Math.round(sum('Sales (Rs)')).toLocaleString()}</td><td>₹${Math.round(avg('Sales (Rs)')).toLocaleString()}</td></tr>
+    <tr><td>Impressions</td><td>${sum('Impressions').toLocaleString()}</td><td>${Math.round(avg('Impressions')).toLocaleString()}</td></tr>
+    <tr><td>Avg Online %</td><td colspan="2">${fmt2(avg('Online %'))}%</td></tr>
+    <tr><td>Health Score (latest)</td><td colspan="2">${hs}/100 — ${scoreGrade(hs)}</td></tr>
+  </table>
+  <h2>Store Breakdown (Latest Week)</h2>
+  <table><tr><th>Store</th><th>Orders</th><th>Sales</th><th>Impressions</th><th>Online %</th><th>Rating</th></tr>
+    ${latest.stores.map(s=>`<tr><td>${s.name||s.subzone}</td><td>${s.metrics['Delivered orders']||0}</td><td>₹${Math.round(s.metrics['Sales (Rs)']||0).toLocaleString()}</td><td>${s.metrics['Impressions']||0}</td><td>${fmt2(s.metrics['Online %']||0)}%</td><td>${fmt2(s.metrics['Average rating']||0)}★</td></tr>`).join('')}
+  </table>
+  <h2>Conversion Funnel (Latest Week)</h2>
+  <table><tr><th>Stage</th><th>Volume</th><th>Conversion</th></tr>
+    <tr><td>Impressions</td><td>${(latest.combined['Impressions']||0).toLocaleString()}</td><td>—</td></tr>
+    <tr><td>Menu Opens</td><td>${latest.combined['Menu opens']||0}</td><td>${pct(latest.combined['Menu opens']||0,latest.combined['Impressions']||1)}</td></tr>
+    <tr><td>Cart Builds</td><td>${latest.combined['Cart builds']||0}</td><td>${pct(latest.combined['Cart builds']||0,latest.combined['Menu opens']||1)}</td></tr>
+    <tr><td>Delivered Orders</td><td>${latest.combined['Delivered orders']||0}</td><td>${pct(latest.combined['Delivered orders']||0,latest.combined['Cart builds']||1)}</td></tr>
+  </table>`;
+
+  const openFlags=allAlerts.filter(a=>!flagStates[a.key]?.resolved&&range.some(w=>w.weekLabel===a.week));
+  if(openFlags.length){
+    html+=`<h2>Open Issues (${openFlags.length})</h2><table><tr><th>Level</th><th>Week</th><th>Store</th><th>Issue</th></tr>
+    ${openFlags.map(f=>`<tr><td>${f.level.toUpperCase()}</td><td>${f.week}</td><td>${f.store}</td><td>${f.msg}</td></tr>`).join('')}</table>`;
+  }
+
+  if(collabs.length){
+    html+=`<h2>Influencer ROI</h2><table><tr><th>Name</th><th>Type</th><th>Cost</th><th>Reach</th><th>Attr. Revenue</th><th>ROI%</th><th>Verdict</th></tr>
+    ${collabs.map(c=>{const i=calcCollabImpact(c);return`<tr><td>${c.name}</td><td>${c.type}</td><td>₹${c.cost||0}</td><td>${((c.views||0)+(c.storyViews||0)).toLocaleString()}</td><td>₹${i?Math.round(i.attrRevenue):0}</td><td>${i&&i.roi!==null?i.roi.toFixed(0)+'%':'pending'}</td><td>${i?.verdict||'pending'}</td></tr>`;}).join('')}</table>`;
+  }
+
+  const critFlags=openFlags.filter(f=>f.level==='crit').slice(0,5);
+  if(critFlags.length){
+    html+=`<h2>Action Items</h2><ol>${critFlags.map(f=>`<li><strong>${f.store}:</strong> ${f.msg}</li>`).join('')}</ol>`;
+  }
+
+  html+=`<hr><p style="font-size:9px;color:#999;text-align:center">Meetha Pitara — Confidential | Generated ${new Date().toLocaleDateString()}</p>`;
+  return html;
+}
+
+// ============================
+// MODAL HELPERS
+// ============================
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay=>{
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.classList.remove('open');});
+});
+
+// ============================
+// UPLOAD ZONE HELPERS
+// ============================
+function markUploadZoneLoaded(){
+  const t=document.getElementById('upload-title');
+  const s=document.getElementById('upload-sub');
+  if(t)t.textContent='Drop more CSV files to add weeks';
+  if(s)s.textContent=`${weeks.length} week${weeks.length!==1?'s':''} loaded from database`;
+}
+
+// ============================
+// BOOT SEQUENCE
+// ============================
+window.addEventListener('load',async()=>{
+  SUPABASE_URL=localStorage.getItem('mp_supabase_url')||'';
+  SUPABASE_KEY=localStorage.getItem('mp_supabase_key')||'';
+  GROQ_KEY=localStorage.getItem('mp_groq_key')||'';
+
+  const warn=document.getElementById('conn-warn');
+  if(!SUPABASE_URL||!SUPABASE_KEY){
+    warn.style.display='flex';
+    setSavePill('idle');
+    return;
+  }
+
+  setSavePill('loading');
+  try{
+    const loaded=await loadAllFromDB();
+    if(loaded){
+      rebuildAlerts();
+      populateWeekSelectors();
+      updateTopbar();
+      renderSavedList();
+      if(weeks.length||collabs.length){
+        markUploadZoneLoaded();
+        setSavePill('saved');
+      }else{
+        setSavePill('nodb');
+      }
+    }else{
+      setSavePill('error');
+    }
+  }catch(e){
+    console.error('Boot error:',e);
+    setSavePill('error');
+  }
+});
+</script>
+</body>
+</html>
