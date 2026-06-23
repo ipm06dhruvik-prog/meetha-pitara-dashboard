@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Meetha Pitara — Intelligence Dashboard</title>
+<title>Meetha Pitara Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -537,7 +537,7 @@ select option{background:var(--bg3)}
     <div class="card"><div class="c-hdr"><div>Weekly Sales in Month</div></div><div class="chart-box"><canvas id="ch-mo-sales"></canvas></div></div>
   </div>
   <div class="card">
-    <div class="c-hdr"><div>Store Breakdown — This Month</div></div>
+    <div class="c-hdr"><div>Store Breakdown: This Month</div></div>
     <div id="mo-stores"></div>
   </div>
   <div class="card"><div class="c-hdr"><div>Month-over-Month Comparison</div></div><div id="mo-compare"></div></div>
@@ -786,7 +786,7 @@ select option{background:var(--bg3)}
 <!-- ====== BRAND BRAIN PANE ====== -->
 <div class="pane" id="pane-brain">
   <div class="section-header">
-    <div><div class="section-title">🧠 Brand Brain</div><div class="section-sub">Fill this out once — all AI responses will use it automatically. Auto-saves.</div></div>
+    <div><div class="section-title">🧠 Brand Brain</div><div class="section-sub">Fill this out once all AI responses will use it automatically. Auto-saves.</div></div>
     <span id="brain-save-status" style="font-size:9px;color:var(--text3)"></span>
   </div>
   <div id="brain-sections"></div>
@@ -1158,11 +1158,11 @@ function generateFlags(w){
   const repeat=cm['Repeat user orders']||0,rating=cm['Average rating']||0;
   if(orders===0&&impr>0)addFlag('crit','Combined','Zero orders despite '+impr.toLocaleString()+' impressions');
   if(offline>5)addFlag('crit','Combined','High offline time: '+offline.toFixed(1)+' hrs total');
-  if(ads===0)addFlag('crit','Combined','No ads running this week — zero paid visibility');
+  if(ads===0)addFlag('crit','Combined','No ads running this week zero paid visibility');
   if(conv<1&&impr>0)addFlag('crit','Combined','Overall conversion rate below 1% ('+conv.toFixed(2)+'%)');
   if(ctr>0&&ctr<5&&impr>100)addFlag('warn','Combined','Low menu CTR: '+ctr.toFixed(1)+'% (target >8%)');
   if(menuOpens>5&&cartBuilds===0)addFlag('warn','Combined','Menu opens not converting to cart builds');
-  if(orders>0&&repeat===0)addFlag('warn','Combined','Zero repeat orders — retention at risk');
+  if(orders>0&&repeat===0)addFlag('warn','Combined','Zero repeat orders retention at risk');
   if(rating>=4.0)addFlag('info','Combined','Rating '+rating.toFixed(1)+'★ — positive signal');
   // Per-store
   w.stores.forEach(s=>{
@@ -1592,7 +1592,7 @@ function renderOverview(){
       <div class="alert-lbl a-${f.level}">${f.level.toUpperCase()}</div>
       <div class="alert-msg">${f.msg}</div>
       <div class="alert-meta">${f.store}</div>
-    </div>`).join('')+(wFlags.length>4?`<div style="font-size:10px;color:var(--text3);padding:4px">+${wFlags.length-4} more — see All Alerts</div>`:'')
+    </div>`).join('')+(wFlags.length>4?`<div style="font-size:10px;color:var(--text3);padding:4px">+${wFlags.length-4} more see All Alerts</div>`:'')
     :'<div style="font-size:10px;color:var(--green);padding:8px 0">✓ No critical open flags this week</div>';
 }
 
@@ -1727,7 +1727,7 @@ function renderWeekly(){
   ];
   const maxV=funnelSteps[0].val||1;
   fEl.innerHTML=funnelSteps.map((step,i)=>{
-    const conv=i>0&&funnelSteps[i-1].val>0?pct(step.val,funnelSteps[i-1].val):'—';
+    const conv=i>0&&funnelSteps[i-1].val>0?pct(step.val,funnelSteps[i-1].val):':';
     const colors=['var(--blue)','var(--purple)','var(--accent)','var(--green)'];
     return `<div class="funnel-step">
       <div class="funnel-label" style="font-size:9px">${step.label}</div>
