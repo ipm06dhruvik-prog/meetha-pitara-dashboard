@@ -47,7 +47,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .sb-section-lbl{font-size:8px;font-weight:700;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;padding:4px 14px 2px}
 .sb-item{display:flex;align-items:center;gap:7px;padding:6px 14px;cursor:pointer;font-size:11px;color:var(--text2);border-left:2px solid transparent;transition:all .15s}
 .sb-item:hover{color:var(--text);background:var(--bg3)}
-.sb-item.active{color:var(--accent);background:rgba(255,107,44,.07);border-left-color:var(--accent)}
+.sb-item.active{color:var(--accent);background:rgba(204,107,70,.07);border-left-color:var(--accent)}
 .sb-badge{margin-left:auto;background:var(--red);color:#fff;font-size:8px;font-weight:700;padding:1px 5px;border-radius:10px}
 
 /* MAIN */
@@ -58,7 +58,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .kpi-row{display:grid;gap:10px;margin-bottom:12px}
 .kpi-row.c5{grid-template-columns:repeat(5,1fr)}.kpi-row.c4{grid-template-columns:repeat(4,1fr)}
 .kpi-row.c3{grid-template-columns:repeat(3,1fr)}.kpi-row.c2{grid-template-columns:repeat(2,1fr)}
-.kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px 15px;position:relative;overflow:hidden}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px 15px;position:relative;overflow:hidden;box-shadow:0 1px 2px rgba(35,31,32,.04);transition:box-shadow .2s}
+.kpi:hover{box-shadow:0 4px 12px rgba(35,31,32,.08)}
 .kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
 .kpi.good::before{background:var(--green)}.kpi.warn::before{background:var(--yellow)}
 .kpi.crit::before{background:var(--red)}.kpi.info::before{background:var(--blue)}
@@ -68,7 +69,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .kpi-sub{font-size:9px;color:var(--text3);margin-top:4px}
 
 /* CARDS */
-.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:15px;margin-bottom:12px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:15px;margin-bottom:12px;box-shadow:0 1px 2px rgba(35,31,32,.04);transition:box-shadow .2s,transform .2s}
+.card:hover{box-shadow:0 4px 14px rgba(35,31,32,.07);}
 .c-hdr{font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .c-hdr-title{display:flex;align-items:center;gap:6px}
 
@@ -86,7 +88,7 @@ button{cursor:pointer;font-family:'Inter',sans-serif;border:none;outline:none;tr
 .btn-secondary{background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:8px 14px;border-radius:8px;font-size:11px}
 .btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
 .btn-danger{background:rgba(166,67,63,.10);border:1px solid rgba(166,67,63,.3);color:#9A2E2A;padding:8px 14px;border-radius:8px;font-size:11px}
-.btn-danger:hover{background:rgba(239,68,68,.2)}
+.btn-danger:hover{background:rgba(166,67,63,.2)}
 .btn-sm{padding:5px 10px;font-size:10px}.btn-xs{padding:3px 8px;font-size:9px}
 .btn-icon{background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:5px 8px;border-radius:7px;font-size:11px}
 .btn-icon:hover{border-color:var(--accent);color:var(--accent)}
@@ -96,7 +98,7 @@ button{cursor:pointer;font-family:'Inter',sans-serif;border:none;outline:none;tr
 .chip.g{background:rgba(31,143,110,.12);color:#0F6B4F}.chip.r{background:rgba(166,67,63,.12);color:#9A2E2A}
 .chip.y{background:rgba(184,113,79,.12);color:#8A5A1E}.chip.b{background:rgba(74,69,168,.12);color:#3530A8}
 .chip.p{background:rgba(138,69,64,.12);color:#6B3530}.chip.o{background:rgba(204,107,70,.12);color:#A8512E}
-.chip.grey{background:rgba(100,116,139,.15);color:#94a3b8}
+.chip.grey{background:rgba(139,131,144,.15);color:#5C5560}
 
 /* FORMS */
 .inp,.sel,.ta{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:11px;color:var(--text);font-family:'Inter',sans-serif;width:100%}
@@ -111,9 +113,9 @@ select option{background:var(--bg3)}
 
 /* ALERTS */
 .alert-item{padding:10px 12px;border-radius:8px;border-left:3px solid;margin-bottom:6px;background:var(--card2)}
-.alert-item.a-crit{border-color:var(--red);background:rgba(239,68,68,.07)}
-.alert-item.a-warn{border-color:var(--yellow);background:rgba(245,158,11,.07)}
-.alert-item.a-info{border-color:var(--blue);background:rgba(59,130,246,.07)}
+.alert-item.a-crit{border-color:var(--red);background:rgba(166,67,63,.07)}
+.alert-item.a-warn{border-color:var(--yellow);background:rgba(184,113,79,.07)}
+.alert-item.a-info{border-color:var(--blue);background:rgba(74,69,168,.07)}
 .alert-lbl{font-size:8px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
 .alert-lbl.a-crit{color:var(--red)}.alert-lbl.a-warn{color:var(--yellow)}.alert-lbl.a-info{color:var(--blue)}
 .alert-msg{font-size:11px;color:var(--text);margin:2px 0}
@@ -126,7 +128,7 @@ select option{background:var(--bg3)}
 .sc-published{background:rgba(31,143,110,.12);color:#0F6B4F}
 
 /* POST CHIPS for calendar */
-.pc-ig-reel{background:rgba(225,48,108,.15);color:#A8336B;font-size:9px;padding:1px 5px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.pc-ig-reel{background:rgba(199,123,99,.15);color:#A8336B;font-size:9px;padding:1px 5px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .pc-ig-carousel{background:rgba(138,69,64,.15);color:#6B3530;font-size:9px;padding:1px 5px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .pc-ig-story{background:rgba(184,113,79,.15);color:#8A5A1E;font-size:9px;padding:1px 5px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .pc-li-brand{background:rgba(74,69,168,.15);color:#3530A8;font-size:9px;padding:1px 5px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
@@ -134,9 +136,9 @@ select option{background:var(--bg3)}
 
 /* PLATFORM TOGGLE */
 .pt-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:6px 12px;border-radius:8px;font-size:10px;font-weight:600}
-.pt-btn.active.pt-ig{background:rgba(225,48,108,.15);border-color:rgba(225,48,108,.4);color:#f9a8d4}
-.pt-btn.active.pt-li{background:rgba(59,130,246,.15);border-color:rgba(59,130,246,.4);color:#93c5fd}
-.pt-btn.active.pt-lf{background:rgba(16,185,129,.15);border-color:rgba(16,185,129,.4);color:#6ee7b7}
+.pt-btn.active.pt-ig{background:rgba(199,123,99,.15);border-color:rgba(199,123,99,.4);color:#A8336B}
+.pt-btn.active.pt-li{background:rgba(74,69,168,.15);border-color:rgba(74,69,168,.4);color:#3530A8}
+.pt-btn.active.pt-lf{background:rgba(31,143,110,.15);border-color:rgba(31,143,110,.4);color:#0F6B4F}
 
 /* FORMAT BUTTONS */
 .fmt-btn{background:var(--bg3);border:1px solid var(--border);padding:10px;text-align:center;border-radius:8px;cursor:pointer;font-size:10px;color:var(--text2);font-family:'Inter',sans-serif}
@@ -154,7 +156,7 @@ select option{background:var(--bg3)}
 
 /* SECTION HEADER */
 .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.section-title{font-size:15px;font-weight:700;color:var(--text)}
+.section-title{font-size:16px;font-weight:800;color:var(--text);letter-spacing:-.2px}
 .section-sub{font-size:10px;color:var(--text3);margin-top:2px}
 
 /* TABLE */
@@ -185,8 +187,8 @@ select option{background:var(--bg3)}
 /* HEATMAP */
 .heatmap-grid{display:grid;grid-template-columns:50px repeat(52,1fr);gap:2px;font-size:8px}
 .heatmap-cell{width:12px;height:12px;border-radius:2px;background:var(--bg3)}
-.hm-0{background:var(--bg3)}.hm-1{background:rgba(255,107,44,.2)}.hm-2{background:rgba(255,107,44,.4)}
-.hm-3{background:rgba(255,107,44,.6)}.hm-4{background:var(--accent)}.hm-5{background:#ff4500}
+.hm-0{background:var(--bg3)}.hm-1{background:rgba(204,107,70,.2)}.hm-2{background:rgba(204,107,70,.4)}
+.hm-3{background:rgba(204,107,70,.6)}.hm-4{background:var(--accent)}.hm-5{background:#ff4500}
 
 /* CALENDAR */
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
@@ -194,7 +196,7 @@ select option{background:var(--bg3)}
 .cal-day{min-height:80px;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:5px;cursor:pointer;transition:border-color .15s}
 .cal-day:hover{border-color:var(--accent)}
 .cal-day.other-month{opacity:.4}
-.cal-day.today{border-color:var(--accent);background:rgba(255,107,44,.05)}
+.cal-day.today{border-color:var(--accent);background:rgba(204,107,70,.05)}
 .cal-day-num{font-size:10px;font-weight:700;color:var(--text3);margin-bottom:3px}
 .cal-day.today .cal-day-num{color:var(--accent)}
 .cal-posts{display:flex;flex-direction:column;gap:2px}
@@ -223,20 +225,20 @@ select option{background:var(--bg3)}
 .impact-lbl{font-size:8px;color:var(--text3);text-transform:uppercase}
 
 /* VERDICT BADGES */
-.verdict-excellent{background:rgba(16,185,129,.15);color:#6ee7b7;padding:3px 8px;border-radius:6px;font-size:9px;font-weight:700}
-.verdict-good{background:rgba(59,130,246,.15);color:#93c5fd;padding:3px 8px;border-radius:6px;font-size:9px;font-weight:700}
-.verdict-breakeven{background:rgba(245,158,11,.15);color:#fcd34d;padding:3px 8px;border-radius:6px;font-size:9px;font-weight:700}
-.verdict-loss{background:rgba(239,68,68,.15);color:#fca5a5;padding:3px 8px;border-radius:6px;font-size:9px;font-weight:700}
-.verdict-pending{background:rgba(100,116,139,.15);color:#94a3b8;padding:3px 8px;border-radius:6px;font-size:9px;font-weight:700}
+.verdict-excellent{background:rgba(31,143,110,.15);color:#0F6B4F;padding:3px 8px;border-radius:6px;font-size:9px;font-weight:700}
+.verdict-good{background:rgba(74,69,168,.15);color:#3530A8;padding:3px 8px;border-radius:6px;font-size:9px;font-weight:700}
+.verdict-breakeven{background:rgba(184,113,79,.15);color:#8A5A1E;padding:3px 8px;border-radius:6px;font-size:9px;font-weight:700}
+.verdict-loss{background:rgba(166,67,63,.15);color:#7A2E2B;padding:3px 8px;border-radius:6px;font-size:9px;font-weight:700}
+.verdict-pending{background:rgba(139,131,144,.15);color:#5C5560;padding:3px 8px;border-radius:6px;font-size:9px;font-weight:700}
 
 /* AI OUTPUT */
 .ai-output{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:12px;line-height:1.7;color:var(--text2);white-space:pre-wrap;min-height:80px}
 .ai-output.loading{display:flex;align-items:center;justify-content:center;color:var(--text3);font-style:italic}
-.hashtag-box{background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:8px;padding:10px;font-size:10px;color:#c4b5fd;margin-top:8px;word-break:break-word}
+.hashtag-box{background:rgba(138,69,64,.08);border:1px solid rgba(138,69,64,.2);border-radius:8px;padding:10px;font-size:10px;color:#6B3530;margin-top:8px;word-break:break-word}
 
 /* UPLOAD ZONE */
 .upload-zone{border:2px dashed var(--border);border-radius:12px;padding:40px;text-align:center;cursor:pointer;transition:all .2s}
-.upload-zone.drag-over{border-color:var(--accent);background:rgba(255,107,44,.05)}
+.upload-zone.drag-over{border-color:var(--accent);background:rgba(204,107,70,.05)}
 .upload-zone:hover{border-color:var(--border2)}
 .upload-icon{font-size:32px;margin-bottom:10px}
 .upload-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
@@ -320,7 +322,7 @@ select option{background:var(--bg3)}
 .report-section-check input{accent-color:var(--accent);width:14px;height:14px}
 
 /* CONNECTION BANNER */
-.conn-banner{background:rgba(255,107,44,.08);border:1px solid rgba(255,107,44,.2);border-radius:10px;padding:14px;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.conn-banner{background:rgba(204,107,70,.08);border:1px solid rgba(204,107,70,.2);border-radius:10px;padding:14px;margin-bottom:14px;display:flex;align-items:center;gap:10px}
 .conn-banner-text{font-size:11px;color:var(--accent2)}
 
 /* TOP 3 LIST */
@@ -508,9 +510,10 @@ select option{background:var(--bg3)}
   </div>
   <div class="kpi-row c4" id="wk-kpis"></div>
   <div class="g3" id="wk-stores"></div>
-  <div class="g2">
+  <div class="g3">
     <div class="card"><div class="c-hdr"><div>Funnel Metrics</div></div><div id="wk-funnel"></div></div>
     <div class="card"><div class="c-hdr"><div>Ads Summary</div></div><div id="wk-ads"></div></div>
+    <div class="card"><div class="c-hdr"><div>📈 Week vs Last Week</div></div><div id="wk-vs-last"></div></div>
   </div>
   <div class="g2">
     <div class="card"><div class="c-hdr"><div>Time Performance</div></div><div id="wk-time"></div></div>
@@ -569,13 +572,28 @@ select option{background:var(--bg3)}
       <div class="card"><div class="c-hdr"><div>User Type Mix Over Time</div></div><div class="chart-box"><canvas id="ch-tr-users"></canvas></div></div>
     </div>
   </div>
+  <div class="trend-section"><div class="trend-section-title">Full Weekly Data Table</div>
+    <div class="card">
+      <div class="c-hdr"><div>📊 Full Weekly Data Table</div><span id="tr-table-count" style="font-size:9px;color:var(--text3)"></span></div>
+      <div style="overflow-x:auto"><table class="tbl" id="tr-full-table"><thead><tr>
+        <th>Week</th><th>Orders</th><th>Sales ₹</th><th>Impressions</th><th>Menu Opens</th>
+        <th>Conv%</th><th>Online%</th><th>Ads ₹</th><th>Repeat</th><th>Health</th>
+      </tr></thead><tbody id="tr-full-table-body"></tbody></table></div>
+    </div>
+  </div>
 </div>
 
 <!-- ====== FUNNEL PANE ====== -->
 <div class="pane" id="pane-funnel">
   <div class="section-header">
     <div><div class="section-title">🔽 Conversion Funnel</div><div class="section-sub">Impressions → Orders breakdown with benchmarks</div></div>
-    <select class="sel" style="width:180px" id="fn-week-sel" onchange="renderFunnel()"></select>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="filter-tabs" style="margin-bottom:0">
+        <div class="f-tab active" id="fn-mode-week" onclick="setFunnelMode('week')">Selected Week</div>
+        <div class="f-tab" id="fn-mode-avg" onclick="setFunnelMode('avg')">All-Time Average</div>
+      </div>
+      <select class="sel" style="width:180px" id="fn-week-sel" onchange="renderFunnel()"></select>
+    </div>
   </div>
   <div id="funnel-viz"></div>
   <div class="g2">
@@ -968,7 +986,7 @@ select option{background:var(--bg3)}
 let weeks=[], collabs=[], posts=[], flagStates={}, allAlerts=[], brandBrain={}, charts={};
 let SUPABASE_URL='', SUPABASE_KEY='', GROQ_KEY='';
 let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
-let calFilterVal='all', alertFilter='all', flagFilter='all';
+let calFilterVal='all', alertFilter='all', flagFilter='all', funnelMode='week';
 let currentPlatform='ig', currentFormat='reel';
 let editingPostId=null;
 let generatedContent='', generatedHashtags='';
@@ -1079,7 +1097,7 @@ function parseZomatoCSV(text,fileName){
     const id=c[0].trim(),metric=c[5].trim();
     if(!id)continue;
     const val=parseFloat(c[6])||0;
-    if(!stores[id])stores[id]={id,name:c[1].trim(),subzone:c[2].trim(),label:(c[2].trim()||c[1].trim()||id),metrics:{}};
+    if(!stores[id])stores[id]={id,name:c[1].trim(),subzone:c[2].trim(),label:((c[2].trim())||(c[1].trim())||id||'Store'),metrics:{}};
     stores[id].metrics[metric]=val;
   }
   const storeList=Object.values(stores);
@@ -1175,11 +1193,29 @@ async function loadAllFromDB(){
   try{
     // Load weeks
     const wRows=await sbSelect('weeks','?select=*&order=sort_key.asc');
-    weeks=wRows.map(r=>({
-      weekLabel:r.week_label,weekNum:r.week_num,weekYear:r.week_year,
-      sortKey:r.sort_key,monthLabel:r.month_label,fileName:r.file_name,
-      stores:(r.data?.stores||[]),combined:(r.data?.combined||{})
-    }));
+    const weeksNeedingRepair=[];
+    weeks=wRows.map(r=>{
+      const rawStores=r.data?.stores||[];
+      const hadMissingLabel=rawStores.some(s=>!s.label||!s.label.trim());
+      const stores=rawStores.map(s=>({
+        ...s,
+        // Self-healing: older saved rows (from before the label field existed) won't have it.
+        // Always recompute defensively from subzone/name/id rather than trusting stored label blindly.
+        label:(s.subzone&&s.subzone.trim())||(s.name&&s.name.trim())||s.id||'Store'
+      }));
+      const week={
+        weekLabel:r.week_label,weekNum:r.week_num,weekYear:r.week_year,
+        sortKey:r.sort_key,monthLabel:r.month_label,fileName:r.file_name,
+        stores,combined:(r.data?.combined||{})
+      };
+      if(hadMissingLabel)weeksNeedingRepair.push(week);
+      return week;
+    });
+    // Quietly persist the repaired labels back to Supabase so every teammate
+    // loading the same database gets the fix, not just this browser session.
+    if(weeksNeedingRepair.length){
+      weeksNeedingRepair.forEach(w=>{saveWeekToDB(w).catch(()=>{});});
+    }
     // Load collabs
     const cRows=await sbSelect('collabs','?select=*&order=id.desc');
     collabs=cRows.map(r=>({
@@ -1345,25 +1381,37 @@ function makeChart(id,type,labels,datasets,opts={}){
   if(!canvas)return;
   if(charts[id])charts[id].destroy();
   const isDonut=type==='doughnut'||type==='pie';
+  const extra=opts.extra||{};
+  const extraScalesTop=extra.scales||{};
+  const extraPlugins=extra.plugins||{};
+  const baseX={ticks:{color:'#8B8390',font:{size:8}},grid:{color:'rgba(35,31,32,.06)'}};
+  const baseY={ticks:{color:'#8B8390',font:{size:8}},grid:{color:'rgba(35,31,32,.08)'}};
+  const mergedScales=isDonut?{}:{
+    x:{...baseX,...extraScalesTop.x,ticks:{...baseX.ticks,...(extraScalesTop.x?.ticks||{})}},
+    y:{...baseY,...extraScalesTop.y,ticks:{...baseY.ticks,...(extraScalesTop.y?.ticks||{})}},
+    ...opts.extraScales,
+    ...Object.fromEntries(Object.entries(extraScalesTop).filter(([k])=>k!=='x'&&k!=='y'))
+  };
+  const mergedLegend={
+    display:isDonut||(datasets.length>1),
+    position:'right',
+    labels:{color:'#5C5560',font:{size:9},boxWidth:8,padding:6},
+    ...extraPlugins.legend
+  };
+  const mergedTooltip={
+    backgroundColor:'#1A2540',titleColor:'#E8EDF5',bodyColor:'#94A3B8',borderColor:'#2A3D5E',borderWidth:1,
+    ...extraPlugins.tooltip
+  };
+  const restExtra={...extra};
+  delete restExtra.scales;delete restExtra.plugins;
   charts[id]=new Chart(canvas,{
     type,
     data:{labels,datasets},
     options:{
       responsive:true,maintainAspectRatio:false,
-      plugins:{
-        legend:{
-          display:isDonut||(datasets.length>1),
-          position:'right',
-          labels:{color:'#94A3B8',font:{size:9},boxWidth:8,padding:6}
-        },
-        tooltip:{backgroundColor:'#1A2540',titleColor:'#E8EDF5',bodyColor:'#94A3B8',borderColor:'#2A3D5E',borderWidth:1}
-      },
-      scales:isDonut?{}:{
-        x:{ticks:{color:'#64748B',font:{size:8}},grid:{color:'rgba(255,255,255,.03)'}},
-        y:{ticks:{color:'#64748B',font:{size:8}},grid:{color:'rgba(255,255,255,.05)'}},
-        ...opts.extraScales
-      },
-      ...opts.extra
+      plugins:{legend:mergedLegend,tooltip:mergedTooltip},
+      scales:mergedScales,
+      ...restExtra
     }
   });
 }
@@ -1492,26 +1540,26 @@ function renderOverview(){
   const labels=recent.map(wk=>wk.weekLabel.replace('Week ','W'));
 
   makeChart('ch-orders-sales','bar',labels,[
-    {label:'Orders',data:recent.map(wk=>wk.combined['Delivered orders']||0),backgroundColor:'rgba(255,107,44,.7)',yAxisID:'y'},
+    {label:'Orders',data:recent.map(wk=>wk.combined['Delivered orders']||0),backgroundColor:'rgba(204,107,70,.7)',yAxisID:'y'},
     {label:'Sales (₹)',data:recent.map(wk=>wk.combined['Sales (Rs)']||0),type:'line',borderColor:'var(--green)',backgroundColor:'transparent',yAxisID:'y1',tension:.3,pointRadius:2}
-  ],{extraScales:{y1:{type:'linear',position:'right',ticks:{color:'#64748B',font:{size:8}},grid:{drawOnChartArea:false}}}});
+  ],{extraScales:{y1:{type:'linear',position:'right',ticks:{color:'#8B8390',font:{size:8}},grid:{drawOnChartArea:false}}}});
 
   makeChart('ch-meal-mix','doughnut',['Breakfast','Lunch','Snacks','Dinner','Late Night'],[{
     data:[cm['Breakfast orders']||0,cm['Lunch orders']||0,cm['Snacks orders']||0,cm['Dinner orders']||0,cm['Late night orders']||0],
-    backgroundColor:['rgba(245,158,11,.7)','rgba(59,130,246,.7)','rgba(255,107,44,.7)','rgba(139,92,246,.7)','rgba(100,116,139,.7)'],
-    borderWidth:0
+    backgroundColor:['rgba(184,113,79,.7)','rgba(74,69,168,.7)','rgba(204,107,70,.7)','rgba(138,69,64,.7)','rgba(139,131,144,.7)'],
+    borderWidth:2,borderColor:'#FFFFFF'
   }]);
 
   makeChart('ch-users','bar',['New','Repeat','Lapsed'],[{
     data:[cm['New user orders']||0,cm['Repeat user orders']||0,cm['Lapsed user orders']||0],
-    backgroundColor:['rgba(59,130,246,.7)','rgba(16,185,129,.7)','rgba(245,158,11,.7)'],
+    backgroundColor:['rgba(74,69,168,.7)','rgba(31,143,110,.7)','rgba(184,113,79,.7)'],
     borderRadius:4
   }],{extra:{plugins:{legend:{display:false}}}});
 
   const adsSpend=cm['Ads spend (Rs)']||0,adsOrders=cm['Ads orders']||0,adsROI=cm['Ads ROI']||0;
   makeChart('ch-ads','bar',['Spend (₹)','Attributed Orders','ROI x'],[{
     data:[adsSpend,adsOrders*100,adsROI],
-    backgroundColor:['rgba(139,92,246,.7)','rgba(59,130,246,.7)','rgba(16,185,129,.7)'],
+    backgroundColor:['rgba(138,69,64,.7)','rgba(74,69,168,.7)','rgba(31,143,110,.7)'],
     borderRadius:4
   }],{extra:{plugins:{legend:{display:false}}}});
 
@@ -1526,7 +1574,7 @@ function renderOverview(){
     <div style="font-size:8px;color:var(--text3);text-transform:uppercase">Rating</div>
   </div>`+
   w.stores.map(s=>`<div class="store-row">
-    <div class="store-name">${s.label}</div>
+    <div class="store-name">${escapeHtml(s.label)}</div>
     <div class="mono">${s.metrics['Delivered orders']||0}</div>
     <div class="mono">${fmtRs(s.metrics['Sales (Rs)']||0)}</div>
     <div class="mono">${fmtK(s.metrics['Impressions']||0)}</div>
@@ -1597,7 +1645,7 @@ function renderHealth(){
   const histScores=weeks.map(wk=>healthScore(wk));
   makeChart('ch-health-hist','line',histLabels,[{
     label:'Health Score',data:histScores,
-    borderColor:'var(--accent)',backgroundColor:'rgba(255,107,44,.1)',
+    borderColor:'var(--accent)',backgroundColor:'rgba(204,107,70,.1)',
     tension:.3,fill:true,pointRadius:3,
     pointBackgroundColor:histScores.map(s=>scoreColor(s))
   }]);
@@ -1635,11 +1683,39 @@ function renderWeekly(){
   // Store cards
   document.getElementById('wk-stores').innerHTML=w.stores.map(s=>`
     <div class="card" style="margin-bottom:0">
-      <div class="c-hdr"><div>${s.label}</div><span class="chip ${healthScore({combined:s.metrics,stores:[]})>=70?'g':'y'}">${healthScore({combined:s.metrics,stores:[]})}</span></div>
+      <div class="c-hdr"><div>${escapeHtml(s.label)}</div><span class="chip ${healthScore({combined:s.metrics,stores:[]})>=70?'g':'y'}">${healthScore({combined:s.metrics,stores:[]})}</span></div>
       ${['Delivered orders','Sales (Rs)','Impressions','Online %','KPT (in minutes)','Average rating'].map(k=>`
         <div class="info-row"><span class="info-row-lbl">${k}</span><span class="info-row-val">${k==='Sales (Rs)'?fmtRs(s.metrics[k]||0):fmt2(s.metrics[k]||0)+(k.includes('%')?'%':k.includes('rating')?'★':k.includes('minutes')?'m':'')}</span></div>
       `).join('')}
     </div>`).join('');
+
+  // Week vs Last Week
+  const wvlEl=document.getElementById('wk-vs-last');
+  const prevWeek=weeks[idx-1];
+  if(!prevWeek){
+    wvlEl.innerHTML='<div style="font-size:10px;color:var(--text3);padding:8px 0">No prior week loaded to compare against</div>';
+  }else{
+    const pcm=prevWeek.combined;
+    const compareRows=[
+      {label:'Orders',cur:cm['Delivered orders']||0,prev:pcm['Delivered orders']||0,isCurrency:false},
+      {label:'Sales',cur:cm['Sales (Rs)']||0,prev:pcm['Sales (Rs)']||0,isCurrency:true},
+      {label:'Impressions',cur:cm['Impressions']||0,prev:pcm['Impressions']||0,isCurrency:false},
+      {label:'Online %',cur:cm['Online %']||0,prev:pcm['Online %']||0,isCurrency:false,isPct:true}
+    ];
+    wvlEl.innerHTML=`<div style="font-size:9px;color:var(--text3);margin-bottom:8px">vs ${escapeHtml(prevWeek.weekLabel)}</div>`+
+      compareRows.map(r=>{
+        const delta=r.prev>0?((r.cur-r.prev)/r.prev*100):(r.cur>0?100:0);
+        const up=delta>=0;
+        const curDisplay=r.isCurrency?fmtRs(r.cur):r.isPct?fmt2(r.cur)+'%':fmtK(r.cur);
+        return `<div class="info-row">
+          <span class="info-row-lbl">${r.label}</span>
+          <span style="display:flex;align-items:center;gap:6px">
+            <span class="info-row-val">${curDisplay}</span>
+            <span style="font-size:9px;font-weight:700;color:${up?'var(--green)':'var(--red)'}">${up?'▲':'▼'}${Math.abs(delta).toFixed(1)}%</span>
+          </span>
+        </div>`;
+      }).join('');
+  }
 
   // Funnel
   const fEl=document.getElementById('wk-funnel');
@@ -1664,6 +1740,9 @@ function renderWeekly(){
   const aEl=document.getElementById('wk-ads');
   aEl.innerHTML=['Ads spend (Rs)','Ads impressions','Ads CTR (%)','Ads orders','Ads ROI'].map(k=>`
     <div class="info-row"><span class="info-row-lbl">${k}</span><span class="info-row-val">${k==='Ads spend (Rs)'?fmtRs(cm[k]||0):k==='Ads ROI'?fmt2(cm[k]||0)+'x':fmt2(cm[k]||0)+(k.includes('%')?'%':'')}</span></div>`).join('');
+  if(!(cm['Ads spend (Rs)']>0)){
+    aEl.innerHTML+=`<div class="alert-item a-warn" style="margin-top:8px"><div class="alert-msg">⚠️ No ads running. Start with ₹100–150/day to test paid visibility.</div></div>`;
+  }
 
   // Time
   const tEl=document.getElementById('wk-time');
@@ -1722,8 +1801,8 @@ function renderMonthly(){
   `;
 
   const labels=mWeeks.map(w=>w.weekLabel.replace('Week ','W'));
-  makeChart('ch-mo-orders','bar',labels,[{label:'Orders',data:mWeeks.map(w=>w.combined['Delivered orders']||0),backgroundColor:'rgba(255,107,44,.7)',borderRadius:4}],{extra:{plugins:{legend:{display:false}},scales:{x:{title:{display:true,text:'Week',color:'#94A3B8',font:{size:9}}},y:{title:{display:true,text:'Orders',color:'#94A3B8',font:{size:9}}}}}});
-  makeChart('ch-mo-sales','bar',labels,[{label:'Sales',data:mWeeks.map(w=>w.combined['Sales (Rs)']||0),backgroundColor:'rgba(16,185,129,.7)',borderRadius:4}],{extra:{plugins:{legend:{display:false}},scales:{x:{title:{display:true,text:'Week',color:'#94A3B8',font:{size:9}}},y:{title:{display:true,text:'Sales (₹)',color:'#94A3B8',font:{size:9}}}}}});
+  makeChart('ch-mo-orders','bar',labels,[{label:'Orders',data:mWeeks.map(w=>w.combined['Delivered orders']||0),backgroundColor:'rgba(204,107,70,.7)',borderRadius:4}],{extra:{plugins:{legend:{display:false}},scales:{x:{title:{display:true,text:'Week',color:'#5C5560',font:{size:9}}},y:{title:{display:true,text:'Orders',color:'#5C5560',font:{size:9}}}}}});
+  makeChart('ch-mo-sales','bar',labels,[{label:'Sales',data:mWeeks.map(w=>w.combined['Sales (Rs)']||0),backgroundColor:'rgba(31,143,110,.7)',borderRadius:4}],{extra:{plugins:{legend:{display:false}},scales:{x:{title:{display:true,text:'Week',color:'#5C5560',font:{size:9}}},y:{title:{display:true,text:'Sales (₹)',color:'#5C5560',font:{size:9}}}}}});
 
   // Store breakdown — auto-discovers every distinct store label present in this month's data,
   // so a newly opened outlet appears automatically with no code changes.
@@ -1804,39 +1883,91 @@ function renderTrends(){
   const labels=weeks.map(w=>w.weekLabel.replace('Week ','W'));
   const g=(key)=>weeks.map(w=>w.combined[key]||0);
 
-  makeChart('ch-tr-orders','line',labels,[{label:'Orders',data:g('Delivered orders'),borderColor:'var(--accent)',backgroundColor:'rgba(255,107,44,.08)',tension:.3,fill:true,pointRadius:2}],{extra:{plugins:{legend:{display:false}}}});
-  makeChart('ch-tr-sales','line',labels,[{label:'Sales (₹)',data:g('Sales (Rs)'),borderColor:'var(--green)',backgroundColor:'rgba(16,185,129,.08)',tension:.3,fill:true,pointRadius:2}],{extra:{plugins:{legend:{display:false}}}});
+  makeChart('ch-tr-orders','line',labels,[{label:'Orders',data:g('Delivered orders'),borderColor:'var(--accent)',backgroundColor:'rgba(204,107,70,.08)',tension:.3,fill:true,pointRadius:2}],{extra:{plugins:{legend:{display:false}},scales:{y:{title:{display:true,text:'Orders'}},x:{title:{display:true,text:'Week'}}}}});
+  makeChart('ch-tr-sales','line',labels,[{label:'Sales (₹)',data:g('Sales (Rs)'),borderColor:'var(--green)',backgroundColor:'rgba(31,143,110,.08)',tension:.3,fill:true,pointRadius:2}],{extra:{plugins:{legend:{display:false}},scales:{y:{title:{display:true,text:'Sales (₹)'}},x:{title:{display:true,text:'Week'}}}}});
   makeChart('ch-tr-impr','bar',labels,[
-    {label:'Impressions',data:g('Impressions'),backgroundColor:'rgba(59,130,246,.6)',yAxisID:'y'},
+    {label:'Impressions',data:g('Impressions'),backgroundColor:'rgba(74,69,168,.6)',yAxisID:'y'},
     {label:'Menu Opens',data:g('Menu opens'),type:'line',borderColor:'var(--purple)',backgroundColor:'transparent',yAxisID:'y1',tension:.3,pointRadius:2}
-  ],{extraScales:{y1:{type:'linear',position:'right',ticks:{color:'#64748B',font:{size:8}},grid:{drawOnChartArea:false}}}});
+  ],{extraScales:{y1:{type:'linear',position:'right',ticks:{color:'#8B8390',font:{size:8}},grid:{drawOnChartArea:false},title:{display:true,text:'Menu Opens',color:'#8B8390',font:{size:9}}}},extra:{scales:{y:{title:{display:true,text:'Impressions'}},x:{title:{display:true,text:'Week'}}}}});
   const convData=weeks.map(w=>{const i=w.combined['Impressions']||0,o=w.combined['Delivered orders']||0;return i>0?(o/i*100):0;});
-  makeChart('ch-tr-conv','line',labels,[{label:'Conv %',data:convData,borderColor:'var(--yellow)',backgroundColor:'rgba(245,158,11,.08)',tension:.3,fill:true,pointRadius:2}],{extra:{plugins:{legend:{display:false}}}});
+  makeChart('ch-tr-conv','line',labels,[{label:'Conv %',data:convData,borderColor:'var(--yellow)',backgroundColor:'rgba(184,113,79,.08)',tension:.3,fill:true,pointRadius:2}],{extra:{plugins:{legend:{display:false}},scales:{y:{title:{display:true,text:'Conversion %'},ticks:{callback:v=>v+'%'}},x:{title:{display:true,text:'Week'}}}}});
   makeChart('ch-tr-online','line',labels,[
     {label:'Online %',data:g('Online %'),borderColor:'var(--green)',yAxisID:'y',tension:.3,pointRadius:2},
-    {label:'Offline Hrs',data:g('Offline time (in hours)'),borderColor:'var(--red)',yAxisID:'y1',tension:.3,pointRadius:2}
-  ],{extraScales:{y1:{type:'linear',position:'right',ticks:{color:'#64748B',font:{size:8}},grid:{drawOnChartArea:false}}}});
-  makeChart('ch-tr-rating','line',labels,[{label:'Avg Rating',data:g('Average rating'),borderColor:'var(--yellow)',backgroundColor:'rgba(245,158,11,.08)',tension:.3,fill:true,pointRadius:3}],{extra:{plugins:{legend:{display:false}}}});
+    {label:'Offline Hrs',data:g('Offline time (in hours)'),borderColor:'var(--red)',yAxisID:'y1',tension:.3,pointRadius:2,borderDash:[5,3]}
+  ],{extraScales:{y1:{type:'linear',position:'right',ticks:{color:'#8B8390',font:{size:8}},grid:{drawOnChartArea:false},title:{display:true,text:'Offline Hrs',color:'#8B8390',font:{size:9}}}},extra:{scales:{y:{title:{display:true,text:'Online %'},ticks:{callback:v=>v+'%'}},x:{title:{display:true,text:'Week'}}}}});
+  makeChart('ch-tr-rating','line',labels,[{label:'Avg Rating',data:g('Average rating'),borderColor:'var(--yellow)',backgroundColor:'rgba(184,113,79,.08)',tension:.3,fill:true,pointRadius:3}],{extra:{plugins:{legend:{display:false}},scales:{y:{title:{display:true,text:'Rating (★)'},suggestedMin:0,suggestedMax:5},x:{title:{display:true,text:'Week'}}}}});
   makeChart('ch-tr-ads','bar',labels,[
-    {label:'Ads Spend (₹)',data:g('Ads spend (Rs)'),backgroundColor:'rgba(139,92,246,.6)',yAxisID:'y'},
+    {label:'Ads Spend (₹)',data:g('Ads spend (Rs)'),backgroundColor:'rgba(138,69,64,.6)',yAxisID:'y'},
     {label:'ROI',data:g('Ads ROI'),type:'line',borderColor:'var(--green)',backgroundColor:'transparent',yAxisID:'y1',tension:.3,pointRadius:2}
-  ],{extraScales:{y1:{type:'linear',position:'right',ticks:{color:'#64748B',font:{size:8}},grid:{drawOnChartArea:false}}}});
+  ],{extraScales:{y1:{type:'linear',position:'right',ticks:{color:'#8B8390',font:{size:8}},grid:{drawOnChartArea:false},title:{display:true,text:'ROI (x)',color:'#8B8390',font:{size:9}}}},extra:{scales:{y:{title:{display:true,text:'Ads Spend (₹)'}},x:{title:{display:true,text:'Week'}}}}});
   makeChart('ch-tr-users','bar',labels,[
-    {label:'New',data:g('New user orders'),backgroundColor:'rgba(59,130,246,.7)',stack:'users'},
-    {label:'Repeat',data:g('Repeat user orders'),backgroundColor:'rgba(16,185,129,.7)',stack:'users'},
-    {label:'Lapsed',data:g('Lapsed user orders'),backgroundColor:'rgba(245,158,11,.7)',stack:'users'}
-  ],{extra:{scales:{x:{stacked:true},y:{stacked:true}}}});
+    {label:'New',data:g('New user orders'),backgroundColor:'rgba(74,69,168,.7)',stack:'users'},
+    {label:'Repeat',data:g('Repeat user orders'),backgroundColor:'rgba(31,143,110,.7)',stack:'users'},
+    {label:'Lapsed',data:g('Lapsed user orders'),backgroundColor:'rgba(184,113,79,.7)',stack:'users'}
+  ],{extra:{scales:{x:{stacked:true,title:{display:true,text:'Week'}},y:{stacked:true,title:{display:true,text:'Orders'}}}}});
+
+  renderFullWeeklyTable();
+}
+
+function renderFullWeeklyTable(){
+  const tbody=document.getElementById('tr-full-table-body');
+  if(!tbody)return;
+  document.getElementById('tr-table-count').textContent=weeks.length+' week'+(weeks.length!==1?'s':'');
+  // Most recent week first, matching the at-a-glance review pattern
+  const rows=[...weeks].reverse();
+  tbody.innerHTML=rows.map(w=>{
+    const cm=w.combined;
+    const orders=cm['Delivered orders']||0,sales=cm['Sales (Rs)']||0,impr=cm['Impressions']||0;
+    const menuOpens=cm['Menu opens']||0,online=cm['Online %']||0,ads=cm['Ads spend (Rs)']||0,repeat=cm['Repeat user orders']||0;
+    const conv=impr>0?(orders/impr*100):0;
+    const hs=healthScore(w);
+    return `<tr>
+      <td style="color:var(--text);font-weight:600">${escapeHtml(w.weekLabel)}</td>
+      <td class="mono" style="color:${orders>0?'var(--text)':'var(--red)'}">${orders}</td>
+      <td class="mono">₹${Math.round(sales).toLocaleString()}</td>
+      <td class="mono">${impr.toLocaleString()}</td>
+      <td class="mono">${menuOpens}</td>
+      <td class="mono" style="color:${conv>=1?'var(--green)':'var(--red)'}">${conv.toFixed(2)}%</td>
+      <td class="mono" style="color:${online>=90?'var(--green)':online>=70?'var(--yellow)':'var(--red)'}">${fmt2(online)}%</td>
+      <td class="mono" style="color:${ads>0?'var(--text)':'var(--red)'}">₹${Math.round(ads)}</td>
+      <td class="mono">${repeat}</td>
+      <td class="mono" style="color:${scoreColor(hs)};font-weight:700">${hs}</td>
+    </tr>`;
+  }).join('');
 }
 
 // ============================
 // FUNNEL PANE
 // ============================
+function setFunnelMode(mode){
+  funnelMode=mode;
+  document.getElementById('fn-mode-week').classList.toggle('active',mode==='week');
+  document.getElementById('fn-mode-avg').classList.toggle('active',mode==='avg');
+  document.getElementById('fn-week-sel').disabled=(mode==='avg');
+  document.getElementById('fn-week-sel').style.opacity=(mode==='avg')?0.4:1;
+  renderFunnel();
+}
+
 function renderFunnel(){
+  if(!weeks.length)return;
   const sel=document.getElementById('fn-week-sel');
-  const idx=sel?parseInt(sel.value):weeks.length-1;
-  const w=weeks[idx]||weeks[weeks.length-1];
-  if(!w)return;
-  const cm=w.combined;
+  const isAvg=funnelMode==='avg';
+
+  // Combined-level funnel values: either the selected week, or the mean across all weeks
+  let cm,subLabel,w;
+  if(isAvg){
+    const n=weeks.length;
+    const avgKey=k=>weeks.reduce((s,wk)=>s+(wk.combined[k]||0),0)/n;
+    cm={'Impressions':avgKey('Impressions'),'Menu opens':avgKey('Menu opens'),'Cart builds':avgKey('Cart builds'),'Delivered orders':avgKey('Delivered orders')};
+    subLabel='Average across all '+n+' week'+(n!==1?'s':'');
+  }else{
+    const idx=sel?parseInt(sel.value):weeks.length-1;
+    w=weeks[idx]||weeks[weeks.length-1];
+    if(!w)return;
+    cm=w.combined;
+    subLabel=w.weekLabel;
+  }
+
   const steps=[
     {label:'Impressions',val:cm['Impressions']||0,bench:'—',color:'var(--blue)'},
     {label:'Menu Opens',val:cm['Menu opens']||0,bench:'>8%',color:'var(--purple)',rate:pct(cm['Menu opens']||0,cm['Impressions']||1)},
@@ -1845,10 +1976,12 @@ function renderFunnel(){
   ];
   assertFunnelStepOverStep(steps);
   const maxV=steps[0].val||1;
-  document.getElementById('funnel-viz').innerHTML=`<div class="card">`+steps.map((s,i)=>`
+  document.getElementById('funnel-viz').innerHTML=`<div class="card">
+    <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">${isAvg?'📊 ':'📅 '}${escapeHtml(subLabel)}</div>`+
+    steps.map((s,i)=>`
     <div class="funnel-step" style="margin-bottom:12px">
       <div style="width:100px;text-align:right">
-        <div style="font-size:10px;color:var(--text2)">${s.label}</div>
+        <div style="font-size:10px;color:var(--text2)">${escapeHtml(s.label)}</div>
         ${s.bench!=='—'?`<div style="font-size:8px;color:var(--text3)">Bench: ${s.bench}</div>`:''}
       </div>
       <div class="funnel-bar-wrap" style="height:32px">
@@ -1859,13 +1992,36 @@ function renderFunnel(){
       <div style="width:60px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:${s.color}">${s.rate||''}</div>
     </div>`).join('')+`</div>`;
 
-  // Per-store funnel
-  document.getElementById('funnel-stores').innerHTML=w.stores.map(s=>`
-    <div style="margin-bottom:12px">
-      <div style="font-size:11px;font-weight:600;color:var(--text);margin-bottom:4px">${s.label}</div>
-      ${['Impressions','Menu opens','Cart builds','Delivered orders'].map(k=>`
-        <div class="info-row"><span class="info-row-lbl" style="font-size:9px">${k}</span><span class="info-row-val">${fmtK(s.metrics[k]||0)}</span></div>`).join('')}
-    </div>`).join('');
+  // Per-store funnel — selected week shows that week's stores; average mode shows each
+  // store's all-time average, auto-discovering whatever store labels exist in the data.
+  const fnStoresEl=document.getElementById('funnel-stores');
+  if(isAvg){
+    const storeMap={};
+    weeks.forEach(wk=>{
+      wk.stores.forEach(s=>{
+        const key=s.label||'Store';
+        if(!storeMap[key])storeMap[key]={label:key,impr:0,menu:0,cart:0,orders:0,n:0};
+        const m=storeMap[key];
+        m.impr+=s.metrics['Impressions']||0;m.menu+=s.metrics['Menu opens']||0;
+        m.cart+=s.metrics['Cart builds']||0;m.orders+=s.metrics['Delivered orders']||0;m.n++;
+      });
+    });
+    fnStoresEl.innerHTML=Object.values(storeMap).map(m=>`
+      <div style="margin-bottom:12px">
+        <div style="font-size:11px;font-weight:600;color:var(--text);margin-bottom:4px">${escapeHtml(m.label)} <span style="font-size:8px;color:var(--text3);font-weight:400">(avg over ${m.n} wk)</span></div>
+        <div class="info-row"><span class="info-row-lbl" style="font-size:9px">Impressions</span><span class="info-row-val">${fmtK(m.impr/m.n)}</span></div>
+        <div class="info-row"><span class="info-row-lbl" style="font-size:9px">Menu opens</span><span class="info-row-val">${fmtK(m.menu/m.n)}</span></div>
+        <div class="info-row"><span class="info-row-lbl" style="font-size:9px">Cart builds</span><span class="info-row-val">${fmtK(m.cart/m.n)}</span></div>
+        <div class="info-row"><span class="info-row-lbl" style="font-size:9px">Delivered orders</span><span class="info-row-val">${fmtK(m.orders/m.n)}</span></div>
+      </div>`).join('');
+  }else{
+    fnStoresEl.innerHTML=w.stores.map(s=>`
+      <div style="margin-bottom:12px">
+        <div style="font-size:11px;font-weight:600;color:var(--text);margin-bottom:4px">${escapeHtml(s.label)}</div>
+        ${['Impressions','Menu opens','Cart builds','Delivered orders'].map(k=>`
+          <div class="info-row"><span class="info-row-lbl" style="font-size:9px">${k}</span><span class="info-row-val">${fmtK(s.metrics[k]||0)}</span></div>`).join('')}
+      </div>`).join('');
+  }
 
   // Trend chart
   const labels=weeks.map(wk=>wk.weekLabel.replace('Week ','W'));
@@ -1873,10 +2029,16 @@ function renderFunnel(){
   const ctrData=weeks.map(wk=>wk.combined['Impressions to menu (%)']||0);
   const m2cData=weeks.map(wk=>wk.combined['Menu to cart (%)']||0);
   makeChart('ch-fn-trend','line',labels,[
-    {label:'Overall Conv%',data:convData,borderColor:'var(--accent)',tension:.3,pointRadius:2},
-    {label:'Impr→Menu%',data:ctrData,borderColor:'var(--blue)',tension:.3,pointRadius:2},
-    {label:'Menu→Cart%',data:m2cData,borderColor:'var(--purple)',tension:.3,pointRadius:2}
-  ]);
+    {label:'Overall Conv%',data:convData,borderColor:'#CC6B46',backgroundColor:'rgba(204,107,70,.08)',borderWidth:2.5,tension:.3,pointRadius:3,pointBackgroundColor:'#CC6B46',fill:false},
+    {label:'Impr→Menu%',data:ctrData,borderColor:'#0D0195',backgroundColor:'transparent',borderWidth:2,borderDash:[6,3],tension:.3,pointRadius:3,pointStyle:'triangle',pointBackgroundColor:'#0D0195',fill:false},
+    {label:'Menu→Cart%',data:m2cData,borderColor:'#8F2A28',backgroundColor:'transparent',borderWidth:2,borderDash:[2,2],tension:.3,pointRadius:3,pointStyle:'rectRot',pointBackgroundColor:'#8F2A28',fill:false}
+  ],{extra:{
+    scales:{
+      y:{title:{display:true,text:'Conversion %',color:'#8B8390',font:{size:9}},ticks:{callback:v=>v+'%'}},
+      x:{title:{display:true,text:'Week',color:'#8B8390',font:{size:9}}}
+    },
+    plugins:{tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+ctx.parsed.y.toFixed(2)+'%'}}}
+  }});
 }
 
 // ============================
@@ -2016,7 +2178,7 @@ function renderMktOverview(){
     const wPosts=posts.filter(p=>p.date&&p.status==='published'&&Math.abs(new Date(p.date)-new Date(w.weekYear+'-01-01')-(w.weekNum-1)*7*86400000)<8*86400000);
     return wPosts.reduce((s,p)=>s+(p.igReach||0)+(p.liImpressions||0),0);
   });
-  makeChart('ch-mkt-reach','bar',rLabels,[{label:'Reach',data:reachByWeek,backgroundColor:'rgba(255,107,44,.7)',borderRadius:4}],{extra:{plugins:{legend:{display:false}}}});
+  makeChart('ch-mkt-reach','bar',rLabels,[{label:'Reach',data:reachByWeek,backgroundColor:'rgba(204,107,70,.7)',borderRadius:4}],{extra:{plugins:{legend:{display:false}}}});
 
   // Engagement by platform
   const platforms=['ig','li','lf'];
@@ -2029,7 +2191,7 @@ function renderMktOverview(){
     }).filter(r=>r>0);
     return rates.length?rates.reduce((a,b)=>a+b,0)/rates.length:0;
   });
-  makeChart('ch-mkt-eng','bar',platLabels,[{data:platEng,backgroundColor:['rgba(225,48,108,.7)','rgba(59,130,246,.7)','rgba(16,185,129,.7)'],borderRadius:4}],{extra:{plugins:{legend:{display:false}}}});
+  makeChart('ch-mkt-eng','bar',platLabels,[{data:platEng,backgroundColor:['rgba(199,123,99,.7)','rgba(74,69,168,.7)','rgba(31,143,110,.7)'],borderRadius:4}],{extra:{plugins:{legend:{display:false}}}});
 
   // Top 3
   const sorted=[...pub].sort((a,b)=>{
@@ -2049,10 +2211,10 @@ function renderMktOverview(){
   // Format + Platform donuts
   const formats=['reel','carousel','story','post'];
   const fmtCounts=formats.map(f=>posts.filter(p=>p.format===f).length);
-  makeChart('ch-mkt-format','doughnut',['Reel','Carousel','Story','Post'],[{data:fmtCounts,backgroundColor:['rgba(225,48,108,.7)','rgba(139,92,246,.7)','rgba(245,158,11,.7)','rgba(59,130,246,.7)'],borderWidth:0}]);
+  makeChart('ch-mkt-format','doughnut',['Reel','Carousel','Story','Post'],[{data:fmtCounts,backgroundColor:['rgba(199,123,99,.7)','rgba(138,69,64,.7)','rgba(184,113,79,.7)','rgba(74,69,168,.7)'],borderWidth:2,borderColor:'#FFFFFF'}]);
 
   const platCounts=['ig','li','lf'].map(pl=>posts.filter(p=>p.platform===pl).length);
-  makeChart('ch-mkt-platform','doughnut',['Instagram','LinkedIn Brand','LinkedIn Founder'],[{data:platCounts,backgroundColor:['rgba(225,48,108,.7)','rgba(59,130,246,.7)','rgba(16,185,129,.7)'],borderWidth:0}]);
+  makeChart('ch-mkt-platform','doughnut',['Instagram','LinkedIn Brand','LinkedIn Founder'],[{data:platCounts,backgroundColor:['rgba(199,123,99,.7)','rgba(74,69,168,.7)','rgba(31,143,110,.7)'],borderWidth:2,borderColor:'#FFFFFF'}]);
 
   // Correlation
   const corrEl=document.getElementById('corr-viz');
@@ -2666,7 +2828,7 @@ function buildReportHTML(){
   </table>
   <h2>Store Breakdown (Latest Week)</h2>
   <table><tr><th>Store</th><th>Orders</th><th>Sales</th><th>Impressions</th><th>Online %</th><th>Rating</th></tr>
-    ${latest.stores.map(s=>`<tr><td>${s.label}</td><td>${s.metrics['Delivered orders']||0}</td><td>₹${Math.round(s.metrics['Sales (Rs)']||0).toLocaleString()}</td><td>${s.metrics['Impressions']||0}</td><td>${fmt2(s.metrics['Online %']||0)}%</td><td>${fmt2(s.metrics['Average rating']||0)}★</td></tr>`).join('')}
+    ${latest.stores.map(s=>`<tr><td>${escapeHtml(s.label)}</td><td>${s.metrics['Delivered orders']||0}</td><td>₹${Math.round(s.metrics['Sales (Rs)']||0).toLocaleString()}</td><td>${s.metrics['Impressions']||0}</td><td>${fmt2(s.metrics['Online %']||0)}%</td><td>${fmt2(s.metrics['Average rating']||0)}★</td></tr>`).join('')}
   </table>
   <h2>Conversion Funnel (Latest Week)</h2>
   <table><tr><th>Stage</th><th>Volume</th><th>Conversion</th></tr>
