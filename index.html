@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Meetha Pitara Dashboard</title>
+<title>Meetha Pitara — Intelligence Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -364,6 +364,7 @@ select option{background:var(--bg3)}
     <div class="tb-sub" style="margin-top:0">Intelligence Dashboard</div>
   </div>
   <div class="save-pill idle" id="save-pill"><span id="save-icon">○</span><span id="save-text">Not connected</span></div>
+  <div class="save-pill idle" id="ai-pill" title="AI status — add Groq API key in Settings">🤖 <span id="ai-pill-text">AI not set</span></div>
   <div class="tb-stat">
     <div class="tb-stat-lbl">Weeks</div>
     <div class="tb-stat-val" id="tb-weeks">0</div>
@@ -537,7 +538,7 @@ select option{background:var(--bg3)}
     <div class="card"><div class="c-hdr"><div>Weekly Sales in Month</div></div><div class="chart-box"><canvas id="ch-mo-sales"></canvas></div></div>
   </div>
   <div class="card">
-    <div class="c-hdr"><div>Store Breakdown: This Month</div></div>
+    <div class="c-hdr"><div>Store Breakdown — This Month</div></div>
     <div id="mo-stores"></div>
   </div>
   <div class="card"><div class="c-hdr"><div>Month-over-Month Comparison</div></div><div id="mo-compare"></div></div>
@@ -786,7 +787,7 @@ select option{background:var(--bg3)}
 <!-- ====== BRAND BRAIN PANE ====== -->
 <div class="pane" id="pane-brain">
   <div class="section-header">
-    <div><div class="section-title">🧠 Brand Brain</div><div class="section-sub">Fill this out once all AI responses will use it automatically. Auto-saves.</div></div>
+    <div><div class="section-title">🧠 Brand Brain</div><div class="section-sub">Fill this out once — all AI responses will use it automatically. Auto-saves.</div></div>
     <span id="brain-save-status" style="font-size:9px;color:var(--text3)"></span>
   </div>
   <div id="brain-sections"></div>
@@ -883,6 +884,7 @@ select option{background:var(--bg3)}
     <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">AI — Groq API</div>
     <div class="f-row"><label class="f-lbl">Groq API Key</label><input class="inp" id="groq-key" placeholder="gsk_..." type="password"></div>
     <div style="font-size:9px;color:var(--text3);margin-bottom:10px">Free key at <a href="https://console.groq.com" target="_blank" style="color:var(--accent)">console.groq.com</a> — no credit card required.</div>
+    <div id="groq-key-status" style="font-size:10px;margin-bottom:10px"></div>
     <button class="btn-primary" onclick="saveSettings()">💾 Save All</button>
   </div>
 </div>
@@ -999,18 +1001,49 @@ function openSettings(){
   document.getElementById('sb-url').value=SUPABASE_URL;
   document.getElementById('sb-key').value=SUPABASE_KEY;
   document.getElementById('groq-key').value=GROQ_KEY;
+  // Show current status of each key
+  const groqStatus=document.getElementById('groq-key-status');
+  if(groqStatus){
+    if(GROQ_KEY){groqStatus.innerHTML='<span style="color:var(--green)">✓ Groq key saved ('+GROQ_KEY.slice(0,8)+'...)</span>';}
+    else{groqStatus.innerHTML='<span style="color:var(--red)">✗ No Groq key saved yet</span>';}
+  }
+  const connStatus=document.getElementById('conn-status');
+  if(connStatus){
+    if(SUPABASE_URL&&SUPABASE_KEY){connStatus.textContent='✓ Supabase credentials saved';connStatus.style.color='var(--green)';}
+    else{connStatus.textContent='No database connected yet';connStatus.style.color='var(--text3)';}
+  }
   openModal('settings-modal');
 }
 
 function saveSettings(){
-  SUPABASE_URL=document.getElementById('sb-url').value.trim().replace(/\/$/,'');
-  SUPABASE_KEY=document.getElementById('sb-key').value.trim();
-  GROQ_KEY=document.getElementById('groq-key').value.trim();
-  localStorage.setItem('mp_supabase_url',SUPABASE_URL);
-  localStorage.setItem('mp_supabase_key',SUPABASE_KEY);
-  localStorage.setItem('mp_groq_key',GROQ_KEY);
+  const newUrl=document.getElementById('sb-url').value.trim().replace(/\/$/,'');
+  const newKey=document.getElementById('sb-key').value.trim();
+  const newGroq=document.getElementById('groq-key').value.trim();
+  localStorage.setItem('mp_supabase_url',newUrl);
+  localStorage.setItem('mp_supabase_key',newKey);
+  localStorage.setItem('mp_groq_key',newGroq);
+  // Update globals immediately — no reload needed
+  GROQ_KEY=newGroq;
+  updateAIPill();
+  const supabaseChanged=(newUrl!==SUPABASE_URL||newKey!==SUPABASE_KEY);
+  SUPABASE_URL=newUrl;
+  SUPABASE_KEY=newKey;
   closeModal('settings-modal');
-  location.reload();
+  // Re-check AI warnings immediately so the key takes effect without a page reload
+  const aiWarn=document.getElementById('ai-groq-warn');
+  const contentWarn=document.getElementById('ai-content-warn');
+  if(aiWarn)aiWarn.style.display=GROQ_KEY?'none':'flex';
+  if(contentWarn)contentWarn.style.display=GROQ_KEY?'none':'flex';
+  // Only reload if Supabase credentials changed (needs DB reconnect)
+  if(supabaseChanged){
+    setSavePill('loading');
+    location.reload();
+  }else{
+    setSavePill(SUPABASE_URL&&SUPABASE_KEY?'saved':'idle');
+    // Show confirmation
+    const btn=document.querySelector('#settings-modal .btn-primary');
+    if(btn){const orig=btn.textContent;btn.textContent='✓ Saved!';btn.style.background='var(--green)';setTimeout(()=>{btn.textContent=orig;btn.style.background='';},2000);}
+  }
 }
 
 async function testConnection(){
@@ -1158,11 +1191,11 @@ function generateFlags(w){
   const repeat=cm['Repeat user orders']||0,rating=cm['Average rating']||0;
   if(orders===0&&impr>0)addFlag('crit','Combined','Zero orders despite '+impr.toLocaleString()+' impressions');
   if(offline>5)addFlag('crit','Combined','High offline time: '+offline.toFixed(1)+' hrs total');
-  if(ads===0)addFlag('crit','Combined','No ads running this week zero paid visibility');
+  if(ads===0)addFlag('crit','Combined','No ads running this week — zero paid visibility');
   if(conv<1&&impr>0)addFlag('crit','Combined','Overall conversion rate below 1% ('+conv.toFixed(2)+'%)');
   if(ctr>0&&ctr<5&&impr>100)addFlag('warn','Combined','Low menu CTR: '+ctr.toFixed(1)+'% (target >8%)');
   if(menuOpens>5&&cartBuilds===0)addFlag('warn','Combined','Menu opens not converting to cart builds');
-  if(orders>0&&repeat===0)addFlag('warn','Combined','Zero repeat orders retention at risk');
+  if(orders>0&&repeat===0)addFlag('warn','Combined','Zero repeat orders — retention at risk');
   if(rating>=4.0)addFlag('info','Combined','Rating '+rating.toFixed(1)+'★ — positive signal');
   // Per-store
   w.stores.forEach(s=>{
@@ -1336,6 +1369,19 @@ function nav(pane){
 // ============================
 // UPDATE TOPBAR
 // ============================
+
+function updateAIPill(){
+  const pill=document.getElementById('ai-pill');
+  const text=document.getElementById('ai-pill-text');
+  if(!pill||!text)return;
+  if(GROQ_KEY){
+    pill.className='save-pill saved';
+    text.textContent='AI ready';
+  }else{
+    pill.className='save-pill idle';
+    text.textContent='AI not set';
+  }
+}
 function updateTopbar(){
   document.getElementById('tb-weeks').textContent=weeks.length;
   const totalSales=weeks.reduce((s,w)=>s+(w.combined['Sales (Rs)']||0),0);
@@ -1352,6 +1398,26 @@ function updateTopbar(){
 // ============================
 // HELPERS
 // ============================
+
+// Button feedback helper — shows loading state while async work completes
+async function withBtnFeedback(btnEl, loadingText, successText, fn){
+  if(!btnEl)return fn();
+  const orig=btnEl.textContent;
+  const origBg=btnEl.style.background;
+  btnEl.disabled=true;
+  btnEl.textContent=loadingText||'Working...';
+  try{
+    await fn();
+    btnEl.textContent=successText||'Done!';
+    btnEl.style.background='var(--green)';
+    setTimeout(()=>{btnEl.textContent=orig;btnEl.style.background=origBg;btnEl.disabled=false;},1800);
+  }catch(e){
+    btnEl.textContent='Error';
+    btnEl.style.background='var(--red)';
+    setTimeout(()=>{btnEl.textContent=orig;btnEl.style.background=origBg;btnEl.disabled=false;},2000);
+    throw e;
+  }
+}
 function escapeHtml(s){
   return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
@@ -1592,7 +1658,7 @@ function renderOverview(){
       <div class="alert-lbl a-${f.level}">${f.level.toUpperCase()}</div>
       <div class="alert-msg">${f.msg}</div>
       <div class="alert-meta">${f.store}</div>
-    </div>`).join('')+(wFlags.length>4?`<div style="font-size:10px;color:var(--text3);padding:4px">+${wFlags.length-4} more see All Alerts</div>`:'')
+    </div>`).join('')+(wFlags.length>4?`<div style="font-size:10px;color:var(--text3);padding:4px">+${wFlags.length-4} more — see All Alerts</div>`:'')
     :'<div style="font-size:10px;color:var(--green);padding:8px 0">✓ No critical open flags this week</div>';
 }
 
@@ -1727,7 +1793,7 @@ function renderWeekly(){
   ];
   const maxV=funnelSteps[0].val||1;
   fEl.innerHTML=funnelSteps.map((step,i)=>{
-    const conv=i>0&&funnelSteps[i-1].val>0?pct(step.val,funnelSteps[i-1].val):':';
+    const conv=i>0&&funnelSteps[i-1].val>0?pct(step.val,funnelSteps[i-1].val):'—';
     const colors=['var(--blue)','var(--purple)','var(--accent)','var(--green)'];
     return `<div class="funnel-step">
       <div class="funnel-label" style="font-size:9px">${step.label}</div>
@@ -2128,13 +2194,17 @@ function buildAIContext(){
 
 async function runAI(){
   const q=document.getElementById('ai-question').value.trim();
-  if(!q||!GROQ_KEY)return;
+  if(!q)return;
+  if(!GROQ_KEY){
+    document.getElementById('ai-output').textContent='No Groq API key set. Click Settings (top right) and add your key from console.groq.com.';
+    return;
+  }
   const out=document.getElementById('ai-output');
   const think=document.getElementById('ai-thinking');
   const btn=document.getElementById('ai-run-btn');
   out.textContent='Analysing...';out.classList.add('loading');
-  think.style.display='inline-block';btn.disabled=true;
-  const systemPrompt=`You are a senior business analyst and brand consultant for Meetha Pitara — a premium artisan gelato + Indian mithai fusion brand in Mumbai.\n\n${buildAIContext()}\n\nBe direct, specific, and reference actual numbers. Use ₹ for currency. Give actionable recommendations. Max 300 words. No fluff.`;
+  think.style.display='inline-block';btn.disabled=true;btn.textContent='Thinking...';
+  const systemPrompt=`You are a senior business analyst and brand consultant for Meetha Pitara — a premium artisan gelato + Indian mithai fusion brand in Mumbai.\n\n${buildAIContext()}\n\nBe direct, specific, and reference actual numbers. Use for currency. Give actionable recommendations. Max 300 words. No fluff.`;
   try{
     const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{
       method:'POST',
@@ -2142,10 +2212,19 @@ async function runAI(){
       body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'system',content:systemPrompt},{role:'user',content:q}],max_tokens:1200,temperature:0.7})
     });
     const data=await r.json();
-    const text=data.choices?.[0]?.message?.content||'No response received.';
-    out.textContent=text;out.classList.remove('loading');
-  }catch(e){out.textContent='Error: '+e.message;out.classList.remove('loading');}
-  think.style.display='none';btn.disabled=false;
+    if(!r.ok){
+      const errMsg=data?.error?.message||'Unknown error';
+      if(r.status===401)out.textContent='Invalid Groq API key. Go to Settings and re-enter your key from console.groq.com.';
+      else if(r.status===429)out.textContent='Rate limit hit. Groq free tier allows 30 requests/minute. Wait a moment and try again.';
+      else out.textContent='Groq API error ('+r.status+'): '+errMsg;
+    }else{
+      out.textContent=data.choices?.[0]?.message?.content||'No response received.';
+    }
+  }catch(e){
+    out.textContent='Network error: '+e.message+'. Check your internet connection.';
+  }
+  out.classList.remove('loading');
+  think.style.display='none';btn.disabled=false;btn.textContent='Analyse';
 }
 
 // ============================
@@ -2339,9 +2418,12 @@ async function savePost(){
     liReposts:parseInt(document.getElementById('pm-li-reposts')?.value)||0,
     liClicks:parseInt(document.getElementById('pm-li-clicks')?.value)||0
   };
-  const idx=posts.findIndex(x=>x.id===p.id);
-  if(idx>=0)posts[idx]=p;else posts.unshift(p);
-  if(SUPABASE_URL)await savePostToDB(p);
+  const saveBtn=document.querySelector('#post-modal .btn-primary');
+  await withBtnFeedback(saveBtn,'Saving...','Saved!',async()=>{
+    const idx=posts.findIndex(x=>x.id===p.id);
+    if(idx>=0)posts[idx]=p;else posts.unshift(p);
+    if(SUPABASE_URL)await savePostToDB(p);
+  });
   closeModal('post-modal');
   renderCalendar();renderTracker();renderMktOverview();
 }
@@ -2443,12 +2525,18 @@ function buildContentUserPrompt(){
   return prompt;
 }
 
+
 async function generateContent(){
-  if(!GROQ_KEY)return;
   const btn=document.getElementById('gen-btn');
-  btn.disabled=true;btn.textContent='⏳ Generating...';
-  const outEl=document.getElementById('gen-output');
   const textEl=document.getElementById('gen-text');
+  const outEl=document.getElementById('gen-output');
+  if(!GROQ_KEY){
+    outEl.style.display='block';
+    textEl.textContent='No Groq API key set. Click Settings (top right) and add your key from console.groq.com.';
+    textEl.classList.remove('loading');
+    return;
+  }
+  btn.disabled=true;btn.textContent='Generating...';
   outEl.style.display='block';
   textEl.textContent='Generating content...';textEl.classList.add('loading');
   try{
@@ -2458,18 +2546,27 @@ async function generateContent(){
       body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'system',content:buildContentSystemPrompt()},{role:'user',content:buildContentUserPrompt()}],max_tokens:1500,temperature:0.8})
     });
     const data=await r.json();
-    let text=data.choices?.[0]?.message?.content||'No content generated.';
-    // Extract hashtags
-    const hashMatch=text.match(/#️⃣ HASHTAGS?:\n?([\s\S]*?)(\n\n|$)/i)||text.match(/(#[A-Za-z]+[\s\S]*?)$/);
-    if(hashMatch){
-      generatedHashtags=hashMatch[1].trim();
-      text=text.replace(hashMatch[0],'').trim();
-      document.getElementById('hashtag-content').textContent=generatedHashtags;
-      document.getElementById('gen-hashtags').style.display='block';
-    }else{document.getElementById('gen-hashtags').style.display='none';}
-    generatedContent=text;
-    textEl.textContent=text;textEl.classList.remove('loading');
-  }catch(e){textEl.textContent='Error: '+e.message;textEl.classList.remove('loading');}
+    if(!r.ok){
+      const errMsg=data?.error?.message||'Unknown error';
+      if(r.status===401)textEl.textContent='Invalid Groq API key. Go to Settings and re-enter your key from console.groq.com.';
+      else if(r.status===429)textEl.textContent='Rate limit hit. Groq free tier allows 30 requests/minute. Wait a moment and try again.';
+      else textEl.textContent='Groq API error ('+r.status+'): '+errMsg;
+      textEl.classList.remove('loading');
+    }else{
+      let text=data.choices?.[0]?.message?.content||'No content generated.';
+      const hashMatch=text.match(/#️⃣ HASHTAGS?:\n?([\s\S]*?)(\n\n|$)/i)||text.match(/(#[A-Za-z]+[\s\S]*?)$/);
+      if(hashMatch){
+        generatedHashtags=hashMatch[1].trim();
+        text=text.replace(hashMatch[0],'').trim();
+        document.getElementById('hashtag-content').textContent=generatedHashtags;
+        document.getElementById('gen-hashtags').style.display='block';
+      }else{document.getElementById('gen-hashtags').style.display='none';}
+      generatedContent=text;
+      textEl.textContent=text;textEl.classList.remove('loading');
+    }
+  }catch(e){
+    textEl.textContent='Network error: '+e.message;textEl.classList.remove('loading');
+  }
   btn.disabled=false;btn.textContent='✨ Generate Content';
 }
 
@@ -2580,6 +2677,7 @@ function renderInfluencer(){
 function openCollabModal(){openModal('collab-modal');}
 
 async function saveCollab(){
+  const btn=document.querySelector('#collab-modal .btn-primary');
   const c={
     id:Date.now(),name:document.getElementById('cm-name').value,
     handle:document.getElementById('cm-handle').value,
@@ -2596,8 +2694,10 @@ async function saveCollab(){
     notes:document.getElementById('cm-notes').value,
     zomatoWeekIdx:findClosestWeekIdx(document.getElementById('cm-date').value)
   };
-  collabs.unshift(c);
-  if(SUPABASE_URL)await saveCollabToDB(c);
+  await withBtnFeedback(btn,'Saving...','Saved!',async()=>{
+    collabs.unshift(c);
+    if(SUPABASE_URL)await saveCollabToDB(c);
+  });
   closeModal('collab-modal');
   renderInfluencer();
 }
@@ -2612,61 +2712,97 @@ async function deleteCollab(id){
 // ============================
 // BRAND BRAIN
 // ============================
+// Brand Brain Schema. Fields marked advanced:true are hidden by default.
+// Essential = things the AI uses constantly. Advanced = one-time strategic setup.
 const BRAIN_SCHEMA=[
   {section:'🎯 Identity & Positioning',fields:[
-    {key:'brand_tagline',label:'Current Tagline',type:'input'},{key:'founding_story',label:'How It Started',type:'ta'},
-    {key:'mission',label:'Mission Statement',type:'ta'},{key:'vision',label:'Vision Statement',type:'ta'},
-    {key:'positioning',label:'Positioning Statement',type:'ta'},{key:'usp',label:'What Makes You Different',type:'ta'},
-    {key:'brand_stage',label:'Current Stage',type:'sel',opts:['Early Growth','Scaling','Established']}
+    {key:'brand_tagline',label:'Current Tagline',type:'input'},
+    {key:'usp',label:'What Makes You Different',type:'ta'},
+    {key:'positioning',label:'Positioning Statement',type:'ta'},
+    {key:'brand_stage',label:'Current Stage',type:'sel',opts:['Early Growth','Scaling','Established']},
+    {key:'founding_story',label:'How It Started',type:'ta',advanced:true},
+    {key:'mission',label:'Mission Statement',type:'ta',advanced:true},
+    {key:'vision',label:'Vision Statement',type:'ta',advanced:true}
   ]},
   {section:'👥 Target Audience',fields:[
-    {key:'primary_audience',label:'Primary Customer Profile',type:'ta'},{key:'audience_age',label:'Age Range',type:'input'},
-    {key:'audience_location',label:'Where They Live/Work',type:'input'},{key:'audience_psychographic',label:'What They Care About',type:'ta'},
-    {key:'not_for',label:'Who You Are NOT For',type:'ta'}
+    {key:'primary_audience',label:'Primary Customer Profile',type:'ta'},
+    {key:'audience_age',label:'Age Range',type:'input'},
+    {key:'audience_location',label:'Where They Live/Work',type:'input'},
+    {key:'audience_psychographic',label:'What They Care About',type:'ta',advanced:true},
+    {key:'not_for',label:'Who You Are NOT For',type:'ta',advanced:true}
   ]},
   {section:'🎨 Voice & Tone',fields:[
     {key:'brand_personality',label:'Brand Personality (3-5 adjectives)',type:'input'},
-    {key:'words_we_use',label:'Phrases/Words You Love',type:'ta'},{key:'words_avoid',label:'Phrases/Words to Never Say',type:'ta'},
-    {key:'emoji_rules',label:'How You Use Emojis',type:'input'},{key:'hindi_urdu_usage',label:'Hindi/Urdu as Brand Asset',type:'ta'}
+    {key:'words_we_use',label:'Phrases/Words You Love',type:'ta'},
+    {key:'words_avoid',label:'Words to Never Use',type:'ta'},
+    {key:'hindi_urdu_usage',label:'Hindi/Urdu as Brand Asset',type:'ta'},
+    {key:'emoji_rules',label:'How You Use Emojis',type:'input',advanced:true}
   ]},
   {section:'🍦 Products',fields:[
-    {key:'hero_products',label:'Hero Products/Flavours',type:'ta'},{key:'seasonal_approach',label:'Seasonal/Limited Editions Approach',type:'ta'},
-    {key:'price_positioning',label:'Price Range & Positioning',type:'input'},{key:'feeling_goal',label:'What You Want Customers to Feel',type:'ta'}
+    {key:'hero_products',label:'Hero Products/Flavours',type:'ta'},
+    {key:'price_positioning',label:'Price Range & Positioning',type:'input'},
+    {key:'feeling_goal',label:'What Customers Should Feel',type:'ta'},
+    {key:'seasonal_approach',label:'Seasonal/Limited Editions',type:'ta',advanced:true}
   ]},
   {section:'📱 Platform Strategy',fields:[
-    {key:'ig_content_pillars',label:'Instagram Content Pillars (4-5 themes)',type:'ta'},
+    {key:'ig_content_pillars',label:'Instagram Content Pillars',type:'ta'},
     {key:'ig_posting_frequency',label:'Target Posting Frequency',type:'input'},
-    {key:'ig_what_works',label:'What Performs Well on IG',type:'ta'},{key:'ig_what_doesnt',label:'What to Avoid on IG',type:'ta'},
-    {key:'li_brand_angle',label:'LinkedIn Brand Page Strategy',type:'ta'},{key:'li_founder_angle',label:"Kovid's LinkedIn Angle",type:'ta'},
-    {key:'future_platforms',label:'Reddit/Discord Plans',type:'ta'}
+    {key:'ig_what_works',label:'What Performs Well on IG',type:'ta'},
+    {key:'ig_what_doesnt',label:'What to Avoid on IG',type:'ta',advanced:true},
+    {key:'li_brand_angle',label:'LinkedIn Brand Strategy',type:'ta',advanced:true},
+    {key:'li_founder_angle',label:"Kovid's LinkedIn Angle",type:'ta',advanced:true},
+    {key:'future_platforms',label:'Reddit/Discord Plans',type:'ta',advanced:true}
   ]},
   {section:'🏪 Business Context',fields:[
-    {key:'outlets',label:'Current Outlets & Characteristics',type:'ta'},{key:'zomato_strategy',label:'Zomato Strategy',type:'ta'},
-    {key:'franchise_goals',label:'Franchise Expansion Plans',type:'ta'},{key:'competitors',label:'Competitors You Watch',type:'ta'},
-    {key:'biggest_problem',label:'Current Biggest Challenge',type:'ta'}
+    {key:'outlets',label:'Current Outlets',type:'ta'},
+    {key:'biggest_problem',label:'Current Biggest Challenge',type:'ta'},
+    {key:'competitors',label:'Competitors You Watch',type:'ta'},
+    {key:'zomato_strategy',label:'Zomato Strategy',type:'ta',advanced:true},
+    {key:'franchise_goals',label:'Franchise Expansion Plans',type:'ta',advanced:true}
   ]},
   {section:'🎯 Goals',fields:[
-    {key:'sixmonth_goal',label:'Success in 6 Months',type:'ta'},{key:'kpis_that_matter',label:'Most Important Metrics',type:'ta'},
-    {key:'north_star',label:'Single North Star Metric',type:'input'}
+    {key:'north_star',label:'Single North Star Metric',type:'input'},
+    {key:'sixmonth_goal',label:'Success in 6 Months',type:'ta'},
+    {key:'kpis_that_matter',label:'Most Important Metrics',type:'ta'}
   ]}
 ];
 
+function renderBrainField(f,sec){
+  const val=(brandBrain[f.key]||'').replace(/"/g,'&quot;');
+  const inp=f.type==='ta'
+    ?`<textarea class="ta" id="brain-${f.key}" onblur="debounceSaveBrain('${f.key}','${sec.section}')">${brandBrain[f.key]||''}</textarea>`
+    :f.type==='sel'
+    ?`<select class="sel" id="brain-${f.key}" onchange="debounceSaveBrain('${f.key}','${sec.section}')"><option value="">Select...</option>${f.opts.map(o=>`<option value="${o}" ${brandBrain[f.key]===o?'selected':''}>${o}</option>`).join('')}</select>`
+    :`<input class="inp" id="brain-${f.key}" value="${val}" onblur="debounceSaveBrain('${f.key}','${sec.section}')">`;
+  return `<div class="brain-field-row"><label class="f-lbl">${f.label}</label>${inp}</div>`;
+}
+
 function renderBrain(){
   const container=document.getElementById('brain-sections');
-  container.innerHTML=BRAIN_SCHEMA.map((sec,si)=>`
-    <div class="brain-section">
+  container.innerHTML=BRAIN_SCHEMA.map((sec,si)=>{
+    const essential=sec.fields.filter(f=>!f.advanced);
+    const advanced=sec.fields.filter(f=>f.advanced);
+    const filledAdvanced=advanced.filter(f=>brandBrain[f.key]&&brandBrain[f.key].trim());
+    return `<div class="brain-section">
       <div class="brain-sec-hdr" onclick="toggleBrainSection(${si})">
-        <span>${sec.section}</span><span id="brain-toggle-${si}">▼</span>
+        <span>${sec.section}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${filledAdvanced.length?`<span style="font-size:8px;color:var(--accent);font-weight:600">${filledAdvanced.length} adv field${filledAdvanced.length>1?'s':''} filled</span>`:''}
+          <span id="brain-toggle-${si}">▼</span>
+        </div>
       </div>
       <div class="brain-sec-body ${si===0?'open':''}" id="brain-body-${si}">
-        ${sec.fields.map(f=>`<div class="brain-field-row">
-          <label class="f-lbl">${f.label}</label>
-          ${f.type==='ta'?`<textarea class="ta" id="brain-${f.key}" onblur="debounceSaveBrain('${f.key}','${sec.section}')">${brandBrain[f.key]||''}</textarea>`
-          :f.type==='sel'?`<select class="sel" id="brain-${f.key}" onchange="debounceSaveBrain('${f.key}','${sec.section}')"><option value="">Select...</option>${f.opts.map(o=>`<option value="${o}" ${brandBrain[f.key]===o?'selected':''}>${o}</option>`).join('')}</select>`
-          :`<input class="inp" id="brain-${f.key}" value="${(brandBrain[f.key]||'').replace(/"/g,'&quot;')}" placeholder="" onblur="debounceSaveBrain('${f.key}','${sec.section}')">`}
-        </div>`).join('')}
+        ${essential.map(f=>renderBrainField(f,sec)).join('')}
+        ${advanced.length?`
+        <div class="brain-advanced-toggle" id="brain-adv-toggle-${si}" onclick="toggleBrainAdvanced(${si})" style="cursor:pointer;display:flex;align-items:center;gap:6px;padding:6px 0;border-top:1px dashed var(--border);margin-top:6px;font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.5px">
+          <span id="brain-adv-icon-${si}">▶</span> Advanced Fields (${advanced.length}) ${filledAdvanced.length?'<span style="color:var(--accent)">· '+filledAdvanced.length+' filled</span>':''}
+        </div>
+        <div id="brain-adv-body-${si}" style="display:none">
+          ${advanced.map(f=>renderBrainField(f,sec)).join('')}
+        </div>`:''}
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function toggleBrainSection(idx){
@@ -2675,6 +2811,15 @@ function toggleBrainSection(idx){
   const isOpen=body.classList.contains('open');
   body.classList.toggle('open',!isOpen);
   toggle.textContent=isOpen?'▶':'▼';
+}
+
+function toggleBrainAdvanced(idx){
+  const body=document.getElementById('brain-adv-body-'+idx);
+  const icon=document.getElementById('brain-adv-icon-'+idx);
+  if(!body)return;
+  const isOpen=body.style.display!=='none';
+  body.style.display=isOpen?'none':'block';
+  icon.textContent=isOpen?'▶':'▼';
 }
 
 function debounceSaveBrain(key,section){
@@ -2789,6 +2934,9 @@ function exportCSV(type){
   }
   const blob=new Blob([csv],{type:'text/csv'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();
+  // Give the user a brief visual confirmation on the button that triggered this
+  const activeBtn=document.activeElement;
+  if(activeBtn&&activeBtn.tagName==='BUTTON'){const orig=activeBtn.textContent;activeBtn.textContent='Downloaded!';activeBtn.style.color='var(--green)';setTimeout(()=>{activeBtn.textContent=orig;activeBtn.style.color='';},1500);}
 }
 
 function previewReport(){
@@ -2798,6 +2946,8 @@ function previewReport(){
 }
 
 function generateReport(){
+  const btn=document.querySelector('#pane-reports .btn-primary');
+  if(btn){const orig=btn.textContent;btn.textContent='Building PDF...';btn.disabled=true;setTimeout(()=>{btn.textContent=orig;btn.disabled=false;},2000);}
   const html=buildReportHTML();
   const w=window.open('','_blank');
   w.document.write(`<!DOCTYPE html><html><head><title>${document.getElementById('rep-title').value}</title><style>body{font-family:Arial,sans-serif;font-size:11px;color:#000;padding:20px}h1{font-size:18px}h2{font-size:14px;border-bottom:1px solid #ccc;padding-bottom:4px}table{width:100%;border-collapse:collapse;margin-bottom:12px}th,td{border:1px solid #ddd;padding:5px 7px;text-align:left}th{background:#f5f5f5;font-weight:700}@media print{body{font-size:10px}}</style></head><body>${html}<script>window.print();<\/script></body></html>`);
@@ -2886,6 +3036,7 @@ window.addEventListener('load',async()=>{
   SUPABASE_URL=localStorage.getItem('mp_supabase_url')||'';
   SUPABASE_KEY=localStorage.getItem('mp_supabase_key')||'';
   GROQ_KEY=localStorage.getItem('mp_groq_key')||'';
+  updateAIPill();
 
   const warn=document.getElementById('conn-warn');
   if(!SUPABASE_URL||!SUPABASE_KEY){
